@@ -63,7 +63,7 @@ add_compile_options(
     -fno-split-wide-types
     -fno-tree-scev-cprop
 )
-file(GLOB SRC_FILES "src/*.cpp") # Load all files in src folder, not best practice but until vscode can add files I am doing it
+file(GLOB_RECURSE SRC_FILES "src/*.cpp") # Load all files in src folder, not best practice but until vscode can add files I am doing it
 
 # Create one target
 add_executable(${PRODUCT_NAME} ${SRC_FILES})
@@ -84,7 +84,7 @@ add_custom_target(eeprom avr-objcopy -j .eeprom  --set-section-flags=.eeprom="al
 add_custom_target(upload avrdude  -c ${PROG_TYPE} -P ${PORT} -p ${MCU} -U flash:w:${PRODUCT_NAME}.hex DEPENDS hex)
 
 # Upload the eeprom with avrdude
-add_custom_target(upload_eeprom avrdude -c ${PROG_TYPE} -p ${MCU}  -U eeprom:w:${PRODUCT_NAME}.eep DEPENDS eeprom)
+add_custom_target(upload_eeprom avrdude -c ${PROG_TYPE} -p ${MCU} -P ${PORT} -U eeprom:w:${PRODUCT_NAME}.eep DEPENDS eeprom)
 
 # Burn fuses
 add_custom_target(fuses avrdude -c ${PROG_TYPE} -p ${MCU}  -U lfuse:w:${L_FUSE}:m -U hfuse:w:${H_FUSE}:m -U efuse:w:${E_FUSE}:m -U lock:w:${LOCK_BIT}:m )

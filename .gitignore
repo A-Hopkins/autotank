@@ -1,2 +1,5 @@
 build/
-.vscode/*.code-workspace
+*.code-workspace
+.vscode/
+!.vscode/tasks.json
+!.vscode/c_cpp_properties.json

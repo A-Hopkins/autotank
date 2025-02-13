@@ -47,7 +47,7 @@ void StateManager::transistion_to_state(TaskState new_state)
   
   current_state = new_state;
   publish_msg(Msg(Msg::Type::STATE,
-                  Msg::Priority::STATE_TRANSISTION_PRIORITY,
+                  Msg::Priority::STATE_TRANSITION_PRIORITY,
                   this,
                   std::vector<int> { static_cast<int>(new_state) }));
 }
@@ -55,20 +55,20 @@ void StateManager::transistion_to_state(TaskState new_state)
 void StateManager::handle_acknowledgment(const Msg& msg)
 {
   BaseTask* sender_task = msg.get_sender();
-
+  const auto* vec = msg.get_data_as<std::vector<int>>();
   if (!sender_task)
   {
     std::cerr << "Error: State ACK from unknown sender\n";
     return;
   }
 
-  if (msg.get_data().empty())
+  if ((*vec).empty())
   {
     std::cerr << "Error: Received STATE_ACK with no state data\n";
     return;
   }
 
-  TaskState acknowledged_state = static_cast<TaskState>(msg.get_data()[0]);
+  TaskState acknowledged_state = static_cast<TaskState>((*vec)[0]);
   task_states[sender_task] = acknowledged_state;
   std::cout << "Task " << sender_task << " acknowledged transition to state " << static_cast<int>(acknowledged_state) << "\n";
 

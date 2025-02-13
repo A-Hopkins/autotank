@@ -88,6 +88,14 @@ void BaseTask::transistion_to_state(TaskState new_state)
               << " to " << static_cast<int>(new_state) << std::endl;
     current_state = new_state;
 
+    if (state_executors.find(current_state) != state_executors.end())
+    {
+
+      state_executors[current_state](Msg(Msg::Type::STATE,
+                                         Msg::Priority::STATE_TRANSITION_PRIORITY,
+                                         this,
+                                         std::vector<int>{ static_cast<int>(new_state) }));
+    }
     publish_msg(Msg(Msg::Type::STATE_ACK,
                     Msg::Priority::MSG_ACK_PRIORITY,
                     this,

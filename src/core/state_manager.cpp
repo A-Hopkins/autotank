@@ -1,29 +1,30 @@
 #include <iostream>
 
+#include "core/broker.h"
 #include "core/state_manager.h"
 
 StateManager::StateManager()
 {
-  subscribe_to_msg_type(Msg::Type::STATE_ACK);
+  subscribe_to_msg_type(msg::Type::STATE_ACK);
 
-  register_state(TaskState::IDLE, [this](const Msg& msg) {
+  register_state(TaskState::IDLE, [this](const msg::Msg& msg) {
     std::cout << "[IDLE] StateManager is waiting for state changes...\n";
   });
 
-  register_state(TaskState::RUNNING, [this](const Msg& msg) {
+  register_state(TaskState::RUNNING, [this](const msg::Msg& msg) {
     std::cout << "[RUNNING] StateManager actively managing tasks...\n";
 
     // If it's a STATE_ACK message, handle it
-    if (msg.get_type() == Msg::Type::STATE_ACK)
+    if (msg.get_type() == msg::Type::STATE_ACK)
     {
       handle_acknowledgment(msg);
     }
   });
 
-  register_state(TaskState::STOPPED, [this](const Msg& msg) {
+  register_state(TaskState::STOPPED, [this](const msg::Msg& msg) {
     std::cout << "[STOPPED] StateManager is stopping operations...\n";
     // If it's a STATE_ACK message, handle it
-    if (msg.get_type() == Msg::Type::STATE_ACK)
+    if (msg.get_type() == msg::Type::STATE_ACK)
     {
       handle_acknowledgment(msg);
     }
@@ -39,32 +40,33 @@ void StateManager::register_task(BaseTask* task)
 void StateManager::request_state_transition(TaskState new_state)
 {
   std::cout << "StateManager transitioning to " << static_cast<int>(new_state) << "\n";
-  transistion_to_state(new_state);
+  transition_to_state(new_state);
 }
 
-void StateManager::transistion_to_state(TaskState new_state)
+void StateManager::transition_to_state(TaskState new_state)
 {
   
   current_state = new_state;
-  publish_msg(Msg(Msg::Type::STATE,
-                  Msg::Priority::STATE_TRANSITION_PRIORITY,
+  Broker::publish(msg::Msg(msg::Type::STATE,
+                  msg::Priority::STATE_TRANSITION_PRIORITY,
                   this,
                   std::vector<int> { static_cast<int>(new_state) }));
 }
 
-void StateManager::handle_acknowledgment(const Msg& msg)
+void StateManager::handle_acknowledgment(const msg::Msg& msg)
 {
   BaseTask* sender_task = msg.get_sender();
   const auto* vec = msg.get_data_as<std::vector<int>>();
+
   if (!sender_task)
   {
     std::cerr << "Error: State ACK from unknown sender\n";
     return;
   }
 
-  if ((*vec).empty())
+  if (!vec || vec->empty())
   {
-    std::cerr << "Error: Received STATE_ACK with no state data\n";
+    std::cerr << "Error: Received STATE_ACK with invalid or no state data\n";
     return;
   }
 

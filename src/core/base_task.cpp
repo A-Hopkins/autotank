@@ -1,10 +1,7 @@
 #include <iostream>
 
 #include "core/base_task.h"
-
-
-std::mutex BaseTask::sub_mutex;
-std::map<Msg::Type, std::vector<BaseTask*>> BaseTask::global_subscribers;
+#include "core/broker.h"
 
 BaseTask::~BaseTask()
 {
@@ -25,7 +22,6 @@ void BaseTask::stop()
   if (running)
   {
     running = false;
-    queue_cv.notify_all();
 
     if (task_thread.joinable())
     {
@@ -34,53 +30,29 @@ void BaseTask::stop()
   }
 }
 
-void BaseTask::subscribe_to_msg_type(Msg::Type type)
+void BaseTask::subscribe_to_msg_type(msg::Type type)
 {
-  std::unique_lock<std::mutex> lock(sub_mutex);
-  global_subscribers[type].push_back(this);
+  Broker::subscribe(this, type);
 }
 
-void BaseTask::publish_msg(const Msg& msg)
-{
-  std::unique_lock<std::mutex> lock(sub_mutex);
-  if (global_subscribers.find(msg.get_type()) != global_subscribers.end())
-  {
-    for (BaseTask* task : global_subscribers[msg.get_type()])
-    {
-      task->enqueue_msg(msg);
-    }
-  }
-}
-
-void BaseTask::register_state(TaskState state, std::function<void(const Msg&)> executor)
+void BaseTask::register_state(TaskState state, std::function<void(const msg::Msg&)> executor)
 {
   state_executors[state] = executor;
-}
-
-void BaseTask::enqueue_msg(const Msg& msg)
-{
-  std::unique_lock<std::mutex> lock(queue_mutex);
-  message_queue.push(msg);
-  queue_cv.notify_one();
 }
 
 void BaseTask::run()
 {
   while(running)
   {
-    std::unique_lock<std::mutex> lock(queue_mutex);
-    queue_cv.wait(lock, [this] { return !message_queue.empty() || !running; });
-
-    if (!message_queue.empty() && state_executors.find(current_state) != state_executors.end())
+    if (running && state_executors.find(current_state) != state_executors.end())
     {
-      Msg msg = message_queue.top();
-      message_queue.pop();
+      msg::Msg msg = message_queue.dequeue();
       state_executors[current_state](msg);
     }
   }
 }
 
-void BaseTask::transistion_to_state(TaskState new_state)
+void BaseTask::transition_to_state(TaskState new_state)
 {
   if (current_state != new_state)
   {
@@ -91,13 +63,14 @@ void BaseTask::transistion_to_state(TaskState new_state)
     if (state_executors.find(current_state) != state_executors.end())
     {
 
-      state_executors[current_state](Msg(Msg::Type::STATE,
-                                         Msg::Priority::STATE_TRANSITION_PRIORITY,
+      state_executors[current_state](msg::Msg(msg::Type::STATE,
+                                         msg::Priority::STATE_TRANSITION_PRIORITY,
                                          this,
                                          std::vector<int>{ static_cast<int>(new_state) }));
     }
-    publish_msg(Msg(Msg::Type::STATE_ACK,
-                    Msg::Priority::MSG_ACK_PRIORITY,
+
+    Broker::publish(msg::Msg(msg::Type::STATE_ACK,
+                    msg::Priority::MSG_ACK_PRIORITY,
                     this,
                     std::vector<int> { static_cast<int>(new_state) }));
   }

@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "msg.h"
-#include "base_task.h"
+#include "task.h"
 
 /**
  * @class Broker
@@ -37,7 +37,7 @@ public:
      std::lock_guard<std::mutex> lock(sub_mutex);
      if (subscribers.find(msg.get_type()) != subscribers.end())
      {
-       for (BaseTask* task : subscribers[msg.get_type()])
+       for (task::Task* task : subscribers[msg.get_type()])
        {
          task->message_queue.enqueue(msg);
        }
@@ -49,7 +49,7 @@ public:
    * @param task Pointer to the task that should receive the message.
    * @param type The type of message to subscribe to.
    */
-  static inline void subscribe(BaseTask* task, msg::Type type)
+  static inline void subscribe(task::Task* task, msg::Type type)
   {
     std::lock_guard<std::mutex> lock(sub_mutex);
     subscribers[type].push_back(task);
@@ -72,5 +72,5 @@ private:
    * Since this map is accessed concurrently by multiple tasks, access to it is protected by
    * `sub_mutex` to ensure thread safety.
    */
-   static inline std::map<msg::Type, std::vector<BaseTask*>> subscribers;
+   static inline std::map<msg::Type, std::vector<task::Task*>> subscribers;
 };

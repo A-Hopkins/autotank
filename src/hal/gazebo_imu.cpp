@@ -41,5 +41,5 @@ void IMU::start(std::function<void(const std::vector<double>&)> callback)
 
 void IMU::stop()
 {
-
+  running = false;
 }

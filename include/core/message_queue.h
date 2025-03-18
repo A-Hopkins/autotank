@@ -21,7 +21,7 @@
  * is implemented as a priority queue, where messages are ordered based on their priority levels.
  * 
  * This queue blocks when attempting to dequeue if the queue is empty, ensuring that the calling thread waits until a 
- * message becomes available.
+ * message becomes available. There is also an option to attempt to dequeue a message without blocking the calling thread.
  */
 class MessageQueue
 {
@@ -59,15 +59,16 @@ public:
    * @param out_msg The message to be dequeued.
    * @return True if a message was successfully dequeued, otherwise false.
    */
-  bool try_dequeue(msg::Msg& out_msg)
+  bool try_dequeue(msg::Msg& out_msg, std::chrono::seconds timeout = std::chrono::seconds(0))
   {
     std::unique_lock<std::mutex> lock(queue_mutex);
-    if (messages.empty()) {
-      return false;
+    if (queue_condition.wait_for(lock, timeout, [this]() { return !messages.empty(); }))
+    {
+      out_msg = messages.top();
+      messages.pop();
+      return true;
     }
-    out_msg = messages.top();
-    messages.pop();
-    return true;
+    return false;
   }
 
   /**

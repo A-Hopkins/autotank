@@ -10,7 +10,7 @@ option(USE_SIM "Build for Gazebo simulation" ON)
 # Source files
 set(SOURCES
   src/main.cpp
-  src/core/base_task.cpp
+  src/core/task.cpp
   src/core/state_manager.cpp
   src/csc/sensors/imu/imu_task.cpp
 )

@@ -2,7 +2,7 @@
 
 Autotank is a C++ project used to explore the use of robotics hardware and Gazebo simulation,
 with an emphasis on abstracting the application layer from the underlying simulator or hardware.
-The framework facilitates task management, state coordination, and inter-task communication through a message-passing system.
+The framework facilitates task management, state coordination, inter-task communication through a message-passing system, and a dedicated broker for pub/sub and message queuing for IPC.
 
 ---
 
@@ -17,13 +17,15 @@ The framework facilitates task management, state coordination, and inter-task co
   - It ensures that all registered tasks acknowledge state changes before progressing, promoting synchronized operations.
 
 - **Message-Based Communication**:  
-  - Uses a custom message system defined in `msg.h` with various message types (e.g., `STATE`, `STATE_ACK`) and priorities.
+  - Uses a custom message system defined in `msg.h` with various message types (e.g., `STATE`, `STATE_ACK`) and priorities.  
+  - A `Broker` class manages the publisher-subscriber model, ensuring efficient message routing between tasks.  
+  - A `MessageQueue` class handles inter-process communication (IPC), decoupling message handling from task logic.
 
 - **Simulation and Hardware Abstraction**:  
   - The application logic remains independent of the execution environment, allowing seamless switching between Gazebo simulation and real hardware.
 
 - **Modular and Extensible Design**:  
-  - Easily extendable to incorporate additional tasks and functionalities.  
+  - Easily extendable to incorporate additional tasks, sensors, and functionalities.  
   - Example usage is provided in `main.cpp` where example tasks are registered and managed by the `StateManager`.
 
 ---
@@ -40,11 +42,17 @@ The framework facilitates task management, state coordination, and inter-task co
   - `src/core/msg.h`:  
     Contains the definition of the `Msg` class used for inter-task communication, including enumerations for message types and priorities.
 
+  - `src/core/broker.h`:
+    Implement the `Broker` class, which manages the pub/sub system and routes messages between tasks.
+
+  - `src/core/message_queue.h`:
+    Provide the `MessageQueue` class, which handles IPC and decouples message handling from task logic.
+
 - **Hardware Abstraction Layer (HAL)**  
   - `src/hal/imu.h` & `src/hal/gazebo_imu.cpp`:  
     Provide a basic interface for an IMU. The Gazebo simulation implementation leverages Gazebo Transport libraries to simulate sensor data.
 
-- **Application Entry Point**  
+  - **Application Entry Point**  
   - `src/main.cpp`:  
     Demonstrates how to create tasks (e.g., `ExampleTask`), register them with the `StateManager`, and perform state transitions.
 
@@ -65,8 +73,8 @@ Autotank follows a **publisher-subscriber** model for inter-component communicat
 
 ### Task Lifecycle
 Each task:
-1. **Subscribes** to relevant message types.
-2. **Processes** incoming messages asynchronously.
+1. **Subscribes** to relevant message types via the `Broker`.
+2. **Processes** incoming messages asynchronously using the `MessageQueue`.
 3. **Transitions** between predefined states (e.g., IDLE, RUNNING, STOPPED) based on received messages.
 4. **Publishes** acknowledgment messages to confirm state transitions.
 
@@ -149,8 +157,5 @@ For real hardware operation:
 ## License
 
 This project is licensed under the MIT License.
-
----
-
 
 ---

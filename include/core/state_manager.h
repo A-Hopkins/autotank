@@ -13,7 +13,9 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "base_task.h"
+#include "task.h"
+
+const std::chrono::seconds STATE_TRANSITION_TIMEOUT = std::chrono::seconds(5); ///< Default timeout for state transitions.
 
 /**
  * @class StateManager
@@ -25,7 +27,7 @@
  * - Ensuring all tasks acknowledge state changes.
  * - Managing system initialization and shutdown.
  */
-class StateManager : public BaseTask
+class StateManager : public task::Task
 {
 public:
   /**
@@ -37,13 +39,22 @@ public:
    * @brief Registers a task with the state manager and sets its initial state to IDLE.
    * @param task Pointer to the task being registered.
    */
-  void register_task(BaseTask* task);
+  void register_task(task::Task* task);
 
   /**
    * @brief Requests a transition to a new state for all registered tasks.
    * @param new_state The state to transition to.
    */
-  void request_state_transition(TaskState new_state);
+  void request_state_transition(task::TaskState new_state);
+
+  /**
+   * @brief Demands a state transition for all registered tasks and waits for acknowledgment.
+   * 
+   * @param new_state The state to transition to.
+   * @param timeout The maximum time to wait for acknowledgment.
+   * @return True if all tasks have transitioned to the new state, false otherwise.
+   */
+  bool demand_state_transition(task::TaskState new_state, std::chrono::seconds timeout = STATE_TRANSITION_TIMEOUT);
 
   /**
    * @brief Initializes the state manager and starts all registered tasks.
@@ -65,17 +76,34 @@ protected:
    * @brief Handles transitions between different task states.
    * @param new_state The state to transition to.
    */
-  void transition_to_state(TaskState new_state) override;
+  void transition_to_state(task::TaskState new_state);
+
+  /**
+   * @brief Processes messages received by the state manager.
+   * @param msg The message to be processed.
+   */
+  void process_message(const msg::Msg& msg);
 
 private:
-  std::unordered_map<BaseTask*, TaskState> task_states; ///< Tracks the current state of each registered task.
+  std::unordered_map<task::Task*, task::TaskState> task_states; ///< Tracks the current state of each registered task.
   std::mutex state_mutex; ///< Mutex for synchronizing state transitions.
   std::condition_variable shutdown_cv; ///< Condition variable used to coordinate shutdown.
+  std::condition_variable state_transition_cv; ///< Condition variable used to coordinate state transitions.
+  task::TaskState current_state; ///< The current state of the state manager.
+  task::TaskState target_state; ///< The target state for a state transition.
 
   /**
    * @brief Handles acknowledgment messages from tasks confirming state transitions.
    * @param msg The acknowledgment message received from a task.
    */
   void handle_acknowledgment(const msg::Msg& msg);
+
+  /**
+   * @brief Checks if all registered tasks have reached a specific state.
+   * 
+   * @param state The state to check for
+   * @return True if all tasks are in the specified state
+   */
+  bool all_tasks_in_state(task::TaskState state) const;
 };
  

@@ -6,20 +6,20 @@
 
 int main()
 {
+  // Create all tasks for the system
   StateManager state_manager;
   IMUTask imu_task;
 
+  // Register tasks with the state manager
   state_manager.register_task(&imu_task);
 
+  // Initialize the state manager and start all tasks
   state_manager.initialize();
-  std::this_thread::sleep_for(std::chrono::seconds(3));
 
-  state_manager.request_state_transition(BaseTask::TaskState::RUNNING);
-
+  state_manager.demand_state_transition(task::TaskState::RUNNING);
+  
   gz::transport::waitForShutdown();
-  std::this_thread::sleep_for(std::chrono::seconds(3));
   state_manager.shutdown();
-  std::this_thread::sleep_for(std::chrono::seconds(3));
   
   return 0;
 }

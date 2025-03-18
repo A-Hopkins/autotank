@@ -9,11 +9,14 @@
  */
 
 #pragma once
-
+#include <string>
 #include <variant>
 #include <vector>
 
-class BaseTask;
+namespace task
+{
+  class Task; // Forward declaration
+}
 
 namespace msg
 {
@@ -27,6 +30,21 @@ namespace msg
     STATE_ACK,  ///< Acknowledgment of a state change request.
     IMU_DATA    ///< Represents IMU (Inertial Measurement Unit) sensor data.
   };
+
+  static std::string msg_type_to_string(Type type)
+  {
+    switch (type)
+    {
+      case Type::STATE:
+        return "STATE";
+      case Type::STATE_ACK:
+        return "STATE_ACK";
+      case Type::IMU_DATA:
+        return "IMU_DATA";
+      default:
+        return "UNKNOWN";
+    }
+  }
 
   /**
    * @enum Priority
@@ -70,7 +88,7 @@ namespace msg
     * @param sender Pointer to the task that sent the message.
     * @param data The data payload associated with the message.
     */
-    Msg(Type type, Priority priority, BaseTask* sender, DataVariant data) 
+    Msg(Type type, Priority priority, task::Task* sender, DataVariant data) 
       : msg_type(type), priority(priority), sending_task(sender), data(std::move(data)) {}
 
     /**
@@ -89,7 +107,7 @@ namespace msg
     * @brief Gets the task that sent the message.
     * @return Pointer to the sender task.
     */
-    BaseTask* get_sender() const { return sending_task; }
+    task::Task* get_sender() const { return sending_task; }
 
     /**
     * @brief Retrieves the data payload as a specific type.
@@ -115,9 +133,9 @@ namespace msg
     bool operator<(const Msg& other) const { return priority < other.priority; }
 
   private:
-    Type msg_type;          ///< The type of message.
-    Priority priority;      ///< The priority level of the message.
-    BaseTask* sending_task; ///< Pointer to the task that sent the message.
-    DataVariant data;       ///< The data payload associated with the message.
+    Type msg_type;       ///< The type of message.
+    Priority priority;   ///< The priority level of the message.
+    task::Task* sending_task;  ///< Pointer to the task that sent the message.
+    DataVariant data;    ///< The data payload associated with the message.
   };
 }

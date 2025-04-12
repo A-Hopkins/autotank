@@ -10,6 +10,9 @@ option(USE_SIM "Build for Gazebo simulation" ON)
 # Add protocore subdirectory
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/protocore protocore_build)
 
+# Add kfplusplus
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/kfplusplus kfplusplus_build)
+
 # include directories BEFORE the target is created
 # This is necessary to ensure that protocorebuild is built with our version of msg_variant_types.h
 target_include_directories(protocore BEFORE PUBLIC
@@ -46,6 +49,7 @@ endif()
 # Create executable
 add_executable(autotank ${SOURCES})
 target_link_libraries(autotank PRIVATE protocore)
+target_link_libraries(autotank PRIVATE protocore kfplusplus)
 
 # Include directories for headers
 target_include_directories(autotank PUBLIC 

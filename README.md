@@ -131,7 +131,8 @@ For real hardware operation:
 - **Compiler**: A C++ compiler with C++17 support.
 - **CMake**: Version 3.15 or higher.
 - **Optional**: Gazebo Transport 14 (for simulation mode).
-- **Protocore**: External framework for core work
+- **Protocore**: External framework for core work can be found here [Protocore](https://github.com/A-Hopkins/protocore)
+- **kfplusplus**: External library for kalman filter found here [Kfplusplus](https://github.com/A-Hopkins/kfplusplus)
 
 ### Building the Project
 
@@ -143,7 +144,9 @@ For real hardware operation:
    mkdir -p workspace/autotank/external
    
    # Create symlink to protocore
-   ln -sf ~/workspace/protocore workspace/autotank/external/protocore
+   ln -sf ~/workspace/protocore ~/workspace/autotank/external/protocore
+   # Create symlink to protocore
+   ln -sf ~/workspace/kfplusplus ~/workspace/autotank/external/kfplusplus
    ```
 
 2. **Create a Build Directory**:

@@ -7,49 +7,49 @@
  * for flexibility in selecting between different IMU data sources (e.g., hardware-based or Gazebo simulation).
  */
 
- #pragma once
+#pragma once
  
- #include <functional>
- #include <vector>
- 
- /**
-  * @class IMU
-  * @brief Abstract interface for IMU sensor data retrieval.
-  *
-  * The IMU class defines a generic interface for interacting with an inertial measurement unit.
-  * The actual implementation is determined by conditional compilation, meaning that the source
-  * of IMU data (e.g., real hardware or a simulation environment) is specified at build time.
-  *
-  * This abstraction allows for seamless switching between different IMU data sources without
-  * modifying high-level code that relies on IMU readings.
-  */
- class IMU
- {
- public:
-   /**
-    * @brief Constructs an IMU interface.
-    *
-    * Since this is an abstract interface, the constructor does not initialize any hardware or simulation.
-    * The actual initialization behavior depends on the compiled implementation.
-    */
-   IMU();
- 
-   /**
-    * @brief Starts the IMU data stream and registers a callback function to receive data.
-    *
-    * This function initiates IMU data collection and calls the provided callback whenever new data is available.
-    * The actual data retrieval mechanism depends on the implementation (hardware polling, event-driven updates, etc.).
-    *
-    * @param callback A function that receives IMU data as a `std::vector<double>`, representing sensor readings.
-    */
-   void start(std::function<void(const std::vector<double>&)> callback);
- 
-   /**
-    * @brief Stops the IMU data stream.
-    *
-    * This function halts IMU data collection. The behavior of stopping (e.g., disabling hardware polling,
-    * unsubscribing from simulation updates, etc.) is implementation-specific.
-    */
-   void stop();
- };
- 
+#include <functional>
+
+#include "msg/imu_msg.h"
+
+/**
+ * @class IMU
+ * @brief Abstract interface for IMU sensor data retrieval.
+ *
+ * The IMU class defines a generic interface for interacting with an inertial measurement unit.
+ * The actual implementation is determined by conditional compilation, meaning that the source
+ * of IMU data (e.g., real hardware or a simulation environment) is specified at build time.
+ *
+ * This abstraction allows for seamless switching between different IMU data sources without
+ * modifying high-level code that relies on IMU readings.
+ */
+class IMU
+{
+public:
+  /**
+   * @brief Constructs an IMU interface.
+   *
+   * Since this is an abstract interface, the constructor does not initialize any hardware or simulation.
+   * The actual initialization behavior depends on the compiled implementation.
+   */
+  IMU();
+
+  /**
+   * @brief Starts the IMU data stream and registers a callback function to receive data.
+   *
+   * This function initiates IMU data collection and calls the provided callback whenever new data is available.
+   * The actual data retrieval mechanism depends on the implementation (hardware polling, event-driven updates, etc.).
+   *
+   * @param callback A function that receives IMU data as a `std::vector<double>`, representing sensor readings.
+   */
+  void start(std::function<void(const msg::IMUDataMsg&)> callback);
+
+  /**
+   * @brief Stops the IMU data stream.
+   *
+   * This function halts IMU data collection. The behavior of stopping (e.g., disabling hardware polling,
+   * unsubscribing from simulation updates, etc.) is implementation-specific.
+   */
+  void stop();
+};

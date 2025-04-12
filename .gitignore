@@ -85,3 +85,6 @@ out/
 ### CMake Patch ###
 # External projects
 *-prefix/
+
+# External project build directories
+external/

@@ -1,17 +1,25 @@
 cmake_minimum_required(VERSION 3.15)
-project(autotank)
+project(autotank VERSION 0.1.0 LANGUAGES C CXX)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 option(USE_SIM "Build for Gazebo simulation" ON)
+
+
+# Add protocore subdirectory
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/protocore protocore_build)
+
+# include directories BEFORE the target is created
+# This is necessary to ensure that protocorebuild is built with our version of msg_variant_types.h
+target_include_directories(protocore BEFORE PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/msg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
 
 # Source files
 set(SOURCES
   src/main.cpp
-  src/core/task.cpp
-  src/core/state_manager.cpp
   src/csc/sensors/imu/imu_task.cpp
 )
 
@@ -37,10 +45,15 @@ endif()
 
 # Create executable
 add_executable(autotank ${SOURCES})
+target_link_libraries(autotank PRIVATE protocore)
 
 # Include directories for headers
-target_include_directories(autotank PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
+target_include_directories(autotank PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/msg
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/protocore/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external
+)
 # Link Gazebo Transport only if simulation is enabled
 if(USE_SIM AND gz-transport14_FOUND)
   # Include Gazebo Transport headers

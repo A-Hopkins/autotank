@@ -7,7 +7,8 @@
  */
 
 #pragma once
-#include "core/task.h"
+#include "protocore/include/task.h"
+#include "msg/imu_msg.h"
 #include "imu.h"
  
 /**
@@ -22,10 +23,13 @@
 class IMUTask : public task::Task
 {
 public:
-  /**
-  * @brief Constructs an IMUTask instance and initializes the IMU sensor.
-  */
-  IMUTask();
+
+  static std::shared_ptr<IMUTask> create()
+  {
+    auto instance = std::shared_ptr<IMUTask>(new IMUTask("IMUTask"));
+    instance->on_initialize();
+    return instance;
+  }
 
   /**
   * @brief Destructor for IMUTask, ensuring proper resource cleanup.
@@ -36,23 +40,32 @@ public:
   * @brief Processes incoming messages.
   * @param msg The message to process.
   */
-  void process_message(const msg::Msg& msg);
+  void process_message(const msg::Msg& msg) override;
 
   /**
    * @brief Transitions the task to a new state.
    *
    * 
    */
-  void transition_to_state(task::TaskState new_state);
+  void transition_to_state(task::TaskState new_state) override;
 
   /**
   * @brief Processes incoming IMU sensor data.
   * @param data A vector of double values representing IMU sensor readings.
   */
-  void process_imu_data(const std::vector<double>& data);
+  void process_imu_data(const msg::IMUDataMsg& data);
  
 protected:
- 
+  /**
+  * @brief Constructs an IMUTask instance and initializes the IMU sensor.
+  */
+  IMUTask(const std::string& name = "IMUTask") : task::Task(name) { }
+
+  void on_initialize() override
+  {
+    safe_subscribe(msg::Type::StateMsg);
+  }
+
 private:
   IMU imu_sensor; ///< IMU sensor instance used for data retrieval and processing.
 };

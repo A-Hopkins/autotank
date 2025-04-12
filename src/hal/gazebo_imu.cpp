@@ -4,14 +4,15 @@
 #include <gz/transport.hh>
 
 #include "csc/sensors/imu/imu.h"
+#include "msg/imu_msg.h"
 
 IMU::IMU() { }
 
 static gz::transport::Node node;
-static std::function<void(const std::vector<double>&)> imu_callback;
+static std::function<void(const msg::IMUDataMsg&)> imu_callback;
 static bool running = false;
 
-void IMU::start(std::function<void(const std::vector<double>&)> callback)
+void IMU::start(std::function<void(const msg::IMUDataMsg&)> callback)
 {
   imu_callback = callback;
   running = true;
@@ -20,7 +21,7 @@ void IMU::start(std::function<void(const std::vector<double>&)> callback)
   {
     if (!running) return;
 
-    std::vector<double> imu_data = {
+    msg::IMUDataMsg imu_data = {
       msg.orientation().x(),
       msg.orientation().y(),
       msg.orientation().z(),

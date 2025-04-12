@@ -91,7 +91,8 @@ sudo apt-get install gazebo11 libgz-transport11-dev
 ### Running the Simulation
 1. **Start Gazebo**:
    ```bash
-   gazebo --verbose
+   cd gazebo/world
+   gz sim autotank_world.sdf
    ```
 2. **Run Autotank in Simulation Mode**:
    ```bash
@@ -130,11 +131,20 @@ For real hardware operation:
 - **Compiler**: A C++ compiler with C++17 support.
 - **CMake**: Version 3.15 or higher.
 - **Optional**: Gazebo Transport 14 (for simulation mode).
+- **Protocore**: External framework for core work
 
 ### Building the Project
 
 1. **Clone the Repository**:  
-   Ensure that you have the project source code on your local machine.
+   Ensure that you have the project source code on your local machine. You will also need to clone the protocore repo and link it with an external folder
+   
+   ```bash
+   # Create external directory
+   mkdir -p workspace/autotank/external
+   
+   # Create symlink to protocore
+   ln -sf ~/workspace/protocore workspace/autotank/external/protocore
+   ```
 
 2. **Create a Build Directory**:
    ```bash

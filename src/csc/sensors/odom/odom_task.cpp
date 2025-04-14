@@ -1,14 +1,14 @@
 #include <iostream>
 
-#include "csc/sensors/imu/imu_task.h"
-#include "csc/sensors/imu/imu.h"
+#include "csc/sensors/odom/odom_task.h"
+#include "csc/sensors/odom/odom.h"
 
-IMUTask::~IMUTask()
+OdomTask::~OdomTask()
 {
-  imu_sensor.stop();
+  odom_sensor.stop();
 }
 
-void IMUTask::process_message(const msg::Msg& msg)
+void OdomTask::process_message(const msg::Msg& msg)
 {
 
   switch(msg.get_type())
@@ -32,7 +32,7 @@ void IMUTask::process_message(const msg::Msg& msg)
   }
 }
 
-void IMUTask::transition_to_state(task::TaskState new_state)
+void OdomTask::transition_to_state(task::TaskState new_state)
 {
   std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
   current_state = new_state;
@@ -51,18 +51,18 @@ void IMUTask::transition_to_state(task::TaskState new_state)
     }
     case task::TaskState::RUNNING:
     {
-      imu_sensor.start([this](const msg::IMUDataMsg& data) { process_imu_data(data); });
+      odom_sensor.start([this](const msg::OdomDataMsg& data) { process_odom_data(data); });
       break;
     }
       
     case task::TaskState::STOPPED:
     {
-      imu_sensor.stop();
+      odom_sensor.stop();
       break;
     }
     case task::TaskState::ERROR:
     {
-      imu_sensor.stop();
+      odom_sensor.stop();
       break;
     }
     default:
@@ -76,12 +76,12 @@ void IMUTask::transition_to_state(task::TaskState new_state)
   safe_publish(msg::Msg(this, msg::StateAckMsg{static_cast<uint8_t>(current_state)}));
 }
 
-void IMUTask::process_imu_data(const msg::IMUDataMsg& data)
+void OdomTask::process_odom_data(const msg::OdomDataMsg& data)
 {
   if (current_state == task::TaskState::RUNNING)
   {
-    std::cout << "IMU data received: " << data.header.frame_id << std::endl;
-    // Publish the IMU data message
+    std::cout << "Odom data received: " << data.header.frame_id << std::endl;
+    // Publish the Odometry data message
     safe_publish(msg::Msg(this, data));
   }
 }

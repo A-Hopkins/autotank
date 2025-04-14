@@ -41,7 +41,7 @@ public:
    * This function initiates IMU data collection and calls the provided callback whenever new data is available.
    * The actual data retrieval mechanism depends on the implementation (hardware polling, event-driven updates, etc.).
    *
-   * @param callback A function that receives IMU data as a `std::vector<double>`, representing sensor readings.
+   * @param callback A function that receives IMU data as a `msg::IMUDataMsg`, representing sensor readings.
    */
   void start(std::function<void(const msg::IMUDataMsg&)> callback);
 

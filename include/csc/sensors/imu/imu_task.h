@@ -51,7 +51,7 @@ public:
 
   /**
   * @brief Processes incoming IMU sensor data.
-  * @param data A vector of double values representing IMU sensor readings.
+  * @param data An IMUDataMsg representing IMU sensor readings.
   */
   void process_imu_data(const msg::IMUDataMsg& data);
  

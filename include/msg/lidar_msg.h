@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <array>
+#include <cstdint>
 
 #include "kfplusplus/include/linalg.h"
 #include "msg/declare_msg.h"
@@ -22,30 +23,33 @@ namespace msg
     Header header;
 
     // start angle of the scan in radians
-    float angle_min;
+    double angle_min;
 
     // end angle of the scan in radians
-    float angle_max;
+    double angle_max;
 
     // angle increment in radians
-    float angle_increment;
+    double angle_increment;
 
     // time between measurements in seconds
-    float time_increment;
+    double time_increment;
 
     // time of the scan in seconds
-    float scan_time;
+    double scan_time;
 
     // minimum range in meters
-    float range_min;
+    double range_min;
 
     // maximum range in meters
-    float range_max;
+    double range_max;
+
+    // number of ranges
+    uint32_t ranges_count;
 
     // range data in meters (Note: values < range_min or > range_max should be discarded)
-    std::array<float, MAX_LIDAR_POINTS> ranges;
+    std::array<double, MAX_LIDAR_POINTS> ranges;
 
     // intensity data [device-specific units]
-    std::array<float, MAX_LIDAR_POINTS> intensities;
+    std::array<double, MAX_LIDAR_POINTS> intensities;
   };
 }

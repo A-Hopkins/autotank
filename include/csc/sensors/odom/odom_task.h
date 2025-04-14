@@ -32,14 +32,14 @@ public:
   }
 
   /**
- * @brief Destructor for OdomTask, ensuring proper resource cleanup.
- */
+   * @brief Destructor for OdomTask, ensuring proper resource cleanup.
+   */
   ~OdomTask();
 
   /**
- * @brief Processes incoming messages.
- * @param msg The message to process.
- */
+   * @brief Processes incoming messages.
+   * @param msg The message to process.
+   */
   void process_message(const msg::Msg& msg) override;
 
   /**
@@ -50,16 +50,16 @@ public:
   void transition_to_state(task::TaskState new_state) override;
 
   /**
- * @brief Processes incoming odometry sensor data.
- * @param data A vector of double values representing odometry sensor readings.
- */
+   * @brief Processes incoming odometry sensor data.
+   * @param data An OdomDataMsg object representing odometry sensor readings.
+   */
   void process_odom_data(const msg::OdomDataMsg& data);
 
 protected:
   /**
- * @brief Constructs an OdomTask instance and initializes the odometry sensor.
- */
-OdomTask(const std::string& name = "OdomTask") : task::Task(name) { }
+   * @brief Constructs an OdomTask instance and initializes the odometry sensor.
+   */
+  OdomTask(const std::string& name = "OdomTask") : task::Task(name) { }
 
   void on_initialize() override
   {
@@ -67,5 +67,5 @@ OdomTask(const std::string& name = "OdomTask") : task::Task(name) { }
   }
 
 private:
-Odom odom_sensor; ///< odom sensor instance used for data retrieval and processing.
+  Odom odom_sensor; ///< odom sensor instance used for data retrieval and processing.
 };

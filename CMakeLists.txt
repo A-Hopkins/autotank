@@ -32,6 +32,7 @@ set(SOURCES
   src/main.cpp
   src/csc/sensors/imu/imu_task.cpp
   src/csc/sensors/odom/odom_task.cpp
+  src/csc/sensors/lidar/lidar_task.cpp
 )
 
 # Conditionally include the appropriate factory implementation
@@ -45,6 +46,7 @@ if(USE_SIM)
   list(APPEND SOURCES
       src/hal/gazebo_imu.cpp
       src/hal/gazebo_odom.cpp
+      src/hal/gazebo_lidar.cpp
       )
 
   if(gz-transport14_FOUND)

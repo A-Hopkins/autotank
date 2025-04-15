@@ -33,7 +33,8 @@ set(SOURCES
   src/csc/sensors/imu/imu_task.cpp
   src/csc/sensors/odom/odom_task.cpp
   src/csc/sensors/lidar/lidar_task.cpp
-  src/csc/control/motion_control/diff_drive_task.cpp
+  src/csc/control/motion_control/motion_control_task.cpp
+  src/csc/localization/localization_task.cpp
 )
 
 # Conditionally include the appropriate factory implementation

@@ -21,7 +21,7 @@
 #include "odom_msg.h"
 #include "lidar_msg.h"
 #include "cmdvel_msg.h"
-
+#include "localization_estimate_msg.h"
 
 namespace msg
 {
@@ -32,6 +32,7 @@ namespace msg
       X(StateAckMsg,               99), \
       X(HeartbeatMsg,              50), \
       X(HeartbeatAckMsg,           49), \
+      X(LocalizationEstimateMsg,   20), \
       X(IMUDataMsg,                10), \
       X(OdomDataMsg,               10), \
       X(LidarDataMsg,              10), \

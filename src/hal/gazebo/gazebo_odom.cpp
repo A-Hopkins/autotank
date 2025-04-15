@@ -35,16 +35,18 @@ void Odom::start(std::function<void(const msg::OdomDataMsg&)> callback)
       },
       
       .pose = {
-        .point = {
-          msg.pose().position().x(),
-          msg.pose().position().y(),
-          msg.pose().position().z()
-        },
-        .orientation = {
-          msg.pose().orientation().x(),
-          msg.pose().orientation().y(),
-          msg.pose().orientation().z(),
-          msg.pose().orientation().w()
+        .pose = {
+          .point = {
+            msg.pose().position().x(),
+            msg.pose().position().y(),
+            msg.pose().position().z()
+          },
+          .orientation = {
+            msg.pose().orientation().x(),
+            msg.pose().orientation().y(),
+            msg.pose().orientation().z(),
+            msg.pose().orientation().w()
+          }
         },
         // The covariance matrix is initialized to zero.
         .covariance = linalg::Matrix<6, 6>()

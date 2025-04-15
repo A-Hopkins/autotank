@@ -1,20 +1,10 @@
-#include "csc/control/motion_control/diff_drive_task.h"
+#include "csc/control/motion_control/motion_control_task.h"
 
-DiffDriveTask::~DiffDriveTask()
+MotionControlTask::~MotionControlTask()
 {
 }
 
-msg::CmdVelMsg calculate_twist_command()
-{
-  msg::CmdVelMsg cmd_vel_msg;
-
-  cmd_vel_msg.twist.linear = {0.1, 0.0, 0.0}; // Example linear velocity
-  cmd_vel_msg.twist.angular = {0.0, 0.0, 0.1}; // Example angular velocity
-
-  return cmd_vel_msg;
-}
-
-void DiffDriveTask::process_message(const msg::Msg &msg)
+void MotionControlTask::process_message(const msg::Msg &msg)
 {
   switch(msg.get_type())
   {
@@ -28,25 +18,7 @@ void DiffDriveTask::process_message(const msg::Msg &msg)
       handle_heartbeat(msg.get_data_as<msg::HeartbeatMsg>());
       break;
     }
-    case msg::Type::IMUDataMsg:
-    {
-      // Handle IMU data
-      auto imu_data = msg.get_data_as<msg::IMUDataMsg>();
-      diff_drive.send_cmd_vel(calculate_twist_command());
-      break;
-    }
-    case msg::Type::OdomDataMsg:
-    {
-      // Handle odometry data
-      auto odom_data = msg.get_data_as<msg::OdomDataMsg>();
-      break;
-    }
-    case msg::Type::LidarDataMsg:
-    {
-      // Handle LIDAR data
-      auto lidar_data = msg.get_data_as<msg::LidarDataMsg>();
-      break;
-    }
+
     default:
     {
       std::cout << get_name() << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type()) << std::endl;
@@ -55,9 +27,22 @@ void DiffDriveTask::process_message(const msg::Msg &msg)
   }
 }
 
-void DiffDriveTask::transition_to_state(task::TaskState new_state)
+void MotionControlTask::transition_to_state(task::TaskState new_state)
 {
+  if (new_state == current_state) return;
+
   std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
+
+  // If running and transitioning to a new state send a zeroized velocity command
+  // to stop the robot before transitioning to the new state
+  if (current_state == task::TaskState::RUNNING)
+  {
+    msg::CmdVelMsg zero_command;
+    zero_command.twist.linear = {0.0, 0.0, 0.0};
+    zero_command.twist.angular = {0.0, 0.0, 0.0};
+    diff_drive.send_cmd_vel(zero_command);
+  }
+
   current_state = new_state;
 
   switch (new_state)
@@ -96,4 +81,14 @@ void DiffDriveTask::transition_to_state(task::TaskState new_state)
   }
   // Publish the state transition message
   safe_publish(msg::Msg(this, msg::StateAckMsg{static_cast<uint8_t>(current_state)}));
+}
+
+msg::CmdVelMsg MotionControlTask::calculate_twist_command()
+{
+  msg::CmdVelMsg cmd_vel_msg;
+
+  cmd_vel_msg.twist.linear = {0.1, 0.0, 0.0}; // Example linear velocity
+  cmd_vel_msg.twist.angular = {0.0, 0.0, 0.1}; // Example angular velocity
+
+  return cmd_vel_msg;
 }

@@ -1,8 +1,8 @@
 /**
- * @file odom_msg.h
- * @brief Defines the odom message
+ * @file localization_estimate_msg.h
+ * @brief Defines the localization estimate message
  *
- * This file provides the definition for an Odometry sensor reading.
+ * This file provides the definition for a localization estimate message.
  */
 #pragma once
 
@@ -13,7 +13,7 @@
 
 namespace msg
 {
-  DECLARE_MESSAGE_TYPE(OdomDataMsg)
+  DECLARE_MESSAGE_TYPE(LocalizationEstimateMsg)
   {
     // Header for the message, containing metadata.
     Header header;

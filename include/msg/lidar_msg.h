@@ -10,7 +10,7 @@
 
 #include "kfplusplus/include/linalg.h"
 #include "msg/declare_msg.h"
-#include "header.h"
+#include "common_types/header.h"
 
 namespace msg
 {

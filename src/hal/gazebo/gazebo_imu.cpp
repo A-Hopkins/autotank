@@ -7,11 +7,12 @@
 #include "msg/imu_msg.h"
 #include "gazebo_helpers.h"
 
-IMU::IMU() { }
 
 static gz::transport::Node node;
 static std::function<void(const msg::IMUDataMsg&)> imu_callback;
 static bool running = false;
+
+IMU::IMU() { }
 
 void IMU::start(std::function<void(const msg::IMUDataMsg&)> callback)
 {

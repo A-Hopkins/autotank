@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "msg/header.h"
+#include "msg/common_types/header.h"
 
 namespace gazebo_helper
 {

@@ -7,11 +7,11 @@
 #include "msg/odom_msg.h"
 #include "gazebo_helpers.h"
 
-Odom::Odom() { }
-
 static gz::transport::Node node;
 static std::function<void(const msg::OdomDataMsg&)> odom_callback;
 static bool running = false;
+
+Odom::Odom() { }
 
 void Odom::start(std::function<void(const msg::OdomDataMsg&)> callback)
 {

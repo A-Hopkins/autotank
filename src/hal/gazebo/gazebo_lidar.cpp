@@ -8,11 +8,11 @@
 #include "msg/lidar_msg.h"
 #include "gazebo_helpers.h"
 
-Lidar::Lidar() { }
-
 static gz::transport::Node node;
 static std::function<void(const msg::LidarDataMsg&)> lidar_callback;
 static bool running = false;
+
+Lidar::Lidar() { }
 
 // Helper function to populate ranges
 static void populate_ranges(const gz::msgs::LaserScan& msg, msg::LidarDataMsg& lidar_data)

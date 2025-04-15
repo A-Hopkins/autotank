@@ -20,6 +20,8 @@
 #include "imu_msg.h"
 #include "odom_msg.h"
 #include "lidar_msg.h"
+#include "cmdvel_msg.h"
+
 
 namespace msg
 {
@@ -32,7 +34,8 @@ namespace msg
       X(HeartbeatAckMsg,           49), \
       X(IMUDataMsg,                10), \
       X(OdomDataMsg,               10), \
-      X(LidarDataMsg,              10)
+      X(LidarDataMsg,              10), \
+      X(CmdVelMsg,                 10)
   #endif
   // Message type declarations are provided in "system_msgs.h"
   // Define the MessageVariant type using the list of message types.

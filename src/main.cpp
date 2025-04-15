@@ -7,6 +7,7 @@
 #include "csc/sensors/imu/imu_task.h"
 #include "csc/sensors/odom/odom_task.h"
 #include "csc/sensors/lidar/lidar_task.h"
+#include "csc/control/motion_control/diff_drive_task.h"
 
 #include <gz/transport.hh>
 
@@ -21,14 +22,17 @@ int main()
   std::shared_ptr<IMUTask> imu_task = IMUTask::create();
   std::shared_ptr<OdomTask> odom_task = OdomTask::create();
   std::shared_ptr<LidarTask> lidar_task = LidarTask::create();
+  std::shared_ptr<DiffDriveTask> diff_drive_task = DiffDriveTask::create();
 
   // Register the heart beat task with the state manager
   state_manager->set_task_registration_observer(heart_beat_task);
+
   // Register tasks with the state manager
   state_manager->register_task(heart_beat_task);
   state_manager->register_task(imu_task);
   state_manager->register_task(odom_task);
   state_manager->register_task(lidar_task);
+  state_manager->register_task(diff_drive_task);
 
   // Initialize the state manager and start all tasks
   state_manager->initialize();

@@ -33,6 +33,7 @@ set(SOURCES
   src/csc/sensors/imu/imu_task.cpp
   src/csc/sensors/odom/odom_task.cpp
   src/csc/sensors/lidar/lidar_task.cpp
+  src/csc/control/motion_control/diff_drive_task.cpp
 )
 
 # Conditionally include the appropriate factory implementation
@@ -44,9 +45,10 @@ if(USE_SIM)
   message(STATUS "Building for Gazebo simulation")
   add_definitions(-DUSE_SIM)
   list(APPEND SOURCES
-      src/hal/gazebo_imu.cpp
-      src/hal/gazebo_odom.cpp
-      src/hal/gazebo_lidar.cpp
+      src/hal/gazebo/gazebo_imu.cpp
+      src/hal/gazebo/gazebo_odom.cpp
+      src/hal/gazebo/gazebo_lidar.cpp
+      src/hal/gazebo/gazebo_diff_drive.cpp
       )
 
   if(gz-transport14_FOUND)

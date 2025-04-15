@@ -14,27 +14,54 @@
 
 namespace msg
 {
+  /**
+   * @brief Represents data from an Inertial Measurement Unit (IMU).
+   *
+   * This message contains orientation, angular velocity, and linear acceleration
+   * data typically provided by an IMU sensor, along with associated covariance matrices.
+   */
   DECLARE_MESSAGE_TYPE(IMUDataMsg)
   {
-    // Header for the message, containing metadata.
+    /**
+     * @brief Header containing timestamp and frame ID information.
+     */
     Header header;
 
-    // Orientation represented as a quaternion (x, y, z, w)
+    /**
+     * @brief Orientation estimate as a quaternion (x, y, z, w).
+     * The order is [x, y, z, w].
+     */
     linalg::Vector<4> orientation;
     
-    // x,y,z axes covariance
+    /**
+     * @brief Covariance matrix for the orientation estimate.
+     * Row/column order corresponds to x, y, z axes of rotation.
+     * Set to [-1, ...] if orientation is unknown.
+     */
     linalg::Matrix<3, 3> orientation_covariance;
 
-    // angular velocity in the x, y, and z directions in rad/s
+    /**
+     * @brief Angular velocity vector in rad/s.
+     * Components are [x, y, z].
+     */
     linalg::Vector<3> angular_velocity;
     
-    // x,y,z axes covariance
+    /**
+     * @brief Covariance matrix for the angular velocity estimate.
+     * Row/column order corresponds to x, y, z axes.
+     */
     linalg::Matrix<3, 3> angular_velocity_covariance;
 
-    // linear acceleration in the x, y, and z directions in m/s^2
+    /**
+     * @brief Linear acceleration vector in m/s^2.
+     * Components are [x, y, z]. Does not include gravity.
+     */
     linalg::Vector<3> linear_acceleration;
 
-    // x,y,z axes covariance
+    /**
+     * @brief Covariance matrix for the linear acceleration estimate.
+     * Row/column order corresponds to x, y, z axes.
+     */
     linalg::Matrix<3, 3> linear_acceleration_covariance;
   };
 }

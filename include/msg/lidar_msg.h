@@ -17,39 +17,66 @@ namespace msg
   // Define the maximum number of lidar points. (gazebo definition is 360)
   constexpr int MAX_LIDAR_POINTS = 360;
 
+  /**
+   * @brief Structure representing a single laser scan measurement.
+   *
+   * This structure holds the data typically received from a 2D LIDAR sensor.
+   */
   DECLARE_MESSAGE_TYPE(LidarDataMsg)
   {
-    // Header for the message, containing metadata.
+    /**
+     * @brief Header containing timestamp and frame ID.
+     */
     Header header;
 
-    // start angle of the scan in radians
+    /**
+     * @brief Start angle of the scan [rad]. Measurement angles are relative to the sensor's coordinate frame.
+     */
     double angle_min;
 
-    // end angle of the scan in radians
+    /**
+     * @brief End angle of the scan [rad].
+     */
     double angle_max;
 
-    // angle increment in radians
+    /**
+     * @brief Angular distance between measurements [rad].
+     */
     double angle_increment;
 
-    // time between measurements in seconds
+    /**
+     * @brief Time between measurements [seconds]. If your scanner is moving, this value allows estimation of the pose of the scanner for each measurement.
+     */
     double time_increment;
 
-    // time of the scan in seconds
+    /**
+     * @brief Time between scans [seconds].
+     */
     double scan_time;
 
-    // minimum range in meters
+    /**
+     * @brief Minimum range value [m]. Values closer than this should be discarded.
+     */
     double range_min;
 
-    // maximum range in meters
+    /**
+     * @brief Maximum range value [m]. Values further than this should be discarded.
+     */
     double range_max;
 
-    // number of ranges
+    /**
+     * @brief Number of range measurements in this scan.
+     */
     uint32_t ranges_count;
 
-    // range data in meters (Note: values < range_min or > range_max should be discarded)
+    /**
+     * @brief Array of range measurements [m]. Order corresponds to angles from angle_min to angle_max. Invalid measurements may be represented by Inf or NaN.
+     */
     std::array<double, MAX_LIDAR_POINTS> ranges;
 
-    // intensity data [device-specific units]
+    /**
+     * @brief Array of intensity measurements [device-specific units]. Order corresponds to range measurements. May be empty if the device does not provide intensity readings.
+     */
     std::array<double, MAX_LIDAR_POINTS> intensities;
   };
 }

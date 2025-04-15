@@ -11,7 +11,7 @@
 
 #include <functional>
 
-#include "msg/lidar_msg.h" // Changed from odom_msg.h
+#include "msg/lidar_msg.h"
 
 /**
  * @class Lidar
@@ -40,8 +40,11 @@ public:
  *
  * This function initiates lidar data collection and calls the provided callback whenever new data is available.
  * The actual data retrieval mechanism depends on the implementation (hardware polling, event-driven updates, etc.).
+ * The specific implementation is determined at compile time based on build configurations (e.g., `USE_SIM` flag).
  *
- * @param callback A function that receives lidar data as a `msg::LidarDataMsg`, representing sensor readings.
+ * @param callback A `std::function` that will be invoked with `msg::LidarDataMsg` objects
+ *                 representing the latest sensor readings. The callback should be thread-safe
+ *                 if the underlying implementation operates asynchronously.
  */
   void start(std::function<void(const msg::LidarDataMsg&)> callback);
 

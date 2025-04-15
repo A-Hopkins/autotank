@@ -1,3 +1,12 @@
+/**
+ * @file gazebo_lidar.cpp
+ * @brief Implementation of the Lidar class for Gazebo simulation environment.
+ *
+ * This file provides the Gazebo-specific implementation for the Lidar sensor interface.
+ * It uses Gazebo Transport (gz::transport) to subscribe to LaserScan messages
+ * and translates them into the internal LidarDataMsg format.
+ */
+
 #include <iostream>
 #include <string>
 #include <limits> // Add include for std::numeric_limits
@@ -8,13 +17,29 @@
 #include "msg/lidar_msg.h"
 #include "gazebo_helpers.h"
 
+/** @brief Gazebo Transport node for communication. */
 static gz::transport::Node node;
+/** @brief Callback function to be invoked when new Lidar data is received. */
 static std::function<void(const msg::LidarDataMsg&)> lidar_callback;
+/** @brief Flag indicating if the Lidar subscription is active. */
 static bool running = false;
 
+/**
+ * @brief Default constructor for the Lidar class.
+ */
 Lidar::Lidar() { }
 
-// Helper function to populate ranges
+/**
+ * @brief Populates the ranges array in LidarDataMsg from a Gazebo LaserScan message.
+ *
+ * Copies range data from the Gazebo message to the internal format. If the Gazebo
+ * message has fewer points than MAX_LIDAR_POINTS, the remaining elements in the
+ * ranges array are filled with infinity. The ranges_count is set to the actual
+ * number of points copied (capped at MAX_LIDAR_POINTS).
+ *
+ * @param msg The incoming Gazebo LaserScan message.
+ * @param lidar_data The LidarDataMsg structure to populate.
+ */
 static void populate_ranges(const gz::msgs::LaserScan& msg, msg::LidarDataMsg& lidar_data)
 {
   int count = std::min(static_cast<int>(msg.count()), msg::MAX_LIDAR_POINTS);
@@ -32,7 +57,17 @@ static void populate_ranges(const gz::msgs::LaserScan& msg, msg::LidarDataMsg& l
   lidar_data.ranges_count = count;
 }
 
-// Helper function to populate intensities
+/**
+ * @brief Populates the intensities array in LidarDataMsg from a Gazebo LaserScan message.
+ *
+ * Copies intensity data from the Gazebo message to the internal format. If the Gazebo
+ * message has fewer intensity points than range points (or fewer than MAX_LIDAR_POINTS),
+ * the remaining elements in the intensities array are filled with 0.0f.
+ * Assumes the number of intensity values corresponds to the number of range values.
+ *
+ * @param msg The incoming Gazebo LaserScan message.
+ * @param lidar_data The LidarDataMsg structure to populate.
+ */
 static void populate_intensities(const gz::msgs::LaserScan& msg, msg::LidarDataMsg& lidar_data)
 {
   int count = std::min(static_cast<int>(msg.count()), msg::MAX_LIDAR_POINTS);
@@ -55,6 +90,14 @@ static void populate_intensities(const gz::msgs::LaserScan& msg, msg::LidarDataM
   }
 }
 
+/**
+ * @brief Starts the Lidar data subscription.
+ *
+ * Subscribes to the "/lidar" Gazebo topic. When a LaserScan message is received,
+ * it's converted to a LidarDataMsg and passed to the provided callback function.
+ *
+ * @param callback The function to call with new Lidar data.
+ */
 void Lidar::start(std::function<void(const msg::LidarDataMsg&)> callback)
 {
   lidar_callback = callback;
@@ -94,6 +137,12 @@ void Lidar::start(std::function<void(const msg::LidarDataMsg&)> callback)
   });
 }
 
+/**
+ * @brief Stops the Lidar data subscription.
+ *
+ * Sets the running flag to false, preventing further processing of incoming
+ * Gazebo messages in the subscription callback. Does not explicitly unsubscribe.
+ */
 void Lidar::stop()
 {
   running = false;

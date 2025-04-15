@@ -39,9 +39,13 @@ public:
    * @brief Starts the IMU data stream and registers a callback function to receive data.
    *
    * This function initiates IMU data collection and calls the provided callback whenever new data is available.
-   * The actual data retrieval mechanism depends on the implementation (hardware polling, event-driven updates, etc.).
+   * The actual data retrieval mechanism depends on the implementation (e.g., hardware polling,
+   * subscribing to simulation topics, event-driven updates). The specific implementation is
+   * determined at compile time based on build configurations (e.g., `USE_SIM` flag).
    *
-   * @param callback A function that receives IMU data as a `msg::IMUDataMsg`, representing sensor readings.
+   * @param callback A `std::function` that will be invoked with `msg::IMUDataMsg` objects
+   *                 representing the latest sensor readings. The callback should be thread-safe
+   *                 if the underlying implementation operates asynchronously.
    */
   void start(std::function<void(const msg::IMUDataMsg&)> callback);
 

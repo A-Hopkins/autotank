@@ -1,15 +1,33 @@
 /**
- * @file msg_varient_types.h
- * @brief Defines the message variant types and associated priorities.
- * 
- * The list below is used to create:
- *   - A variant type (MessageVariant) that can hold any of the listed message types.
- *   - A constexpr array (MessagePriorities) that holds the priority for each message type.
+ * @file msg_variant_types.h
+ * @brief Defines project-specific message variant types and associated priorities for AutoTank.
  *
- * To add a new message type, add a new line (with the type name and its priority)
- * and then declare the message using the DECLARE_MESSAGE_TYPE macro.
- * 
- * This file is compiled over the msg_variant_types.h in protocore.
+ * @details This header file defines the set of message types used within the AutoTank
+ * application. It utilizes a macro-based approach (MESSAGE_VARIANT_TYPES) to generate:
+ *   - A `std::variant` type named `MessageVariant` capable of holding any defined message type.
+ *   - A `constexpr` array `message_priorities` mapping each message type to its priority level.
+ *   - An `enum class Type` enumerating all defined message types.
+ *   - A `constexpr` array `message_type_names` containing string representations of the message types.
+ *   - A utility function `msg_type_to_string` to convert the enum `Type` to its string name.
+ *
+ * **Override Mechanism:**
+ * This file is intended to **override** the default `msg_variant_types.h`
+ * (or a similarly named default file like `msg_variant_types_default.h`)
+ * provided by the underlying `protocore` framework. The build system
+ * (e.g., CMake) should be configured to prioritize this project-specific
+ * version during compilation, ensuring that the AutoTank application uses its
+ * custom set of messages and priorities instead of the framework defaults.
+ *
+ * **Adding New Message Types:**
+ * To add a new message type:
+ * 1. Include the header file for the new message struct (e.g., `"my_new_msg.h"`).
+ * 2. Add a new line to the `MESSAGE_VARIANT_TYPES` macro list, specifying the
+ *    message struct name and its desired priority (e.g., `X(MyNewMsg, 15),`).
+ *    Ensure the struct is declared appropriately (often via `DECLARE_MESSAGE_TYPE`
+ *    if using `protocore` conventions, though system messages might be handled differently).
+ *
+ * The rest of the definitions (`MessageVariant`, `message_priorities`, etc.) will
+ * be automatically updated based on the modified `MESSAGE_VARIANT_TYPES` list.
  */
 #pragma once
 #include <cstdint>
@@ -33,10 +51,10 @@ namespace msg
       X(HeartbeatMsg,              50), \
       X(HeartbeatAckMsg,           49), \
       X(LocalizationEstimateMsg,   20), \
+      X(CmdVelMsg,                 15), \
       X(IMUDataMsg,                10), \
       X(OdomDataMsg,               10), \
-      X(LidarDataMsg,              10), \
-      X(CmdVelMsg,                 10)
+      X(LidarDataMsg,              10)
   #endif
   // Message type declarations are provided in "system_msgs.h"
   // Define the MessageVariant type using the list of message types.

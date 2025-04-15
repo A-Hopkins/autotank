@@ -1,9 +1,23 @@
+/**
+ * @file motion_control_task.cpp
+ * @brief Implements the MotionControlTask class for managing differential drive operations.
+ *
+ * This file contains the implementation of the MotionControlTask class, which is responsible for
+ * processing messages, managing state transitions, and calculating twist commands for a
+ * differential drive system based on localization and waypoints.
+ */
 #include "csc/control/motion_control/motion_control_task.h"
 
 MotionControlTask::~MotionControlTask()
 {
 }
 
+/**
+ * @brief Processes incoming messages based on their type.
+ *
+ * Handles StateMsg for state transitions and HeartbeatMsg. Logs unhandled message types.
+ * @param msg The message to process.
+ */
 void MotionControlTask::process_message(const msg::Msg &msg)
 {
   switch(msg.get_type())
@@ -27,6 +41,15 @@ void MotionControlTask::process_message(const msg::Msg &msg)
   }
 }
 
+/**
+ * @brief Transitions the task to a new state and performs associated actions.
+ *
+ * Manages the lifecycle of the motion control task. If the task is running and transitioning
+ * to a new state, it sends a zero velocity command to stop the robot first. It then updates
+ * the current state and performs actions specific to the new state, such as starting or stopping
+ * the differential drive. Finally, it publishes a StateAckMsg to confirm the transition.
+ * @param new_state The target state for the task.
+ */
 void MotionControlTask::transition_to_state(task::TaskState new_state)
 {
   if (new_state == current_state) return;
@@ -49,12 +72,10 @@ void MotionControlTask::transition_to_state(task::TaskState new_state)
   {
     case task::TaskState::NOT_STARTED:
     {
-      // Perform any actions needed when transitioning to NOT_STARTED
       break;
     }
     case task::TaskState::IDLE:
     {
-      // Perform any actions needed when transitioning to IDLE
       break;
     }
     case task::TaskState::RUNNING:
@@ -79,10 +100,18 @@ void MotionControlTask::transition_to_state(task::TaskState new_state)
       break;
     }
   }
-  // Publish the state transition message
   safe_publish(msg::Msg(this, msg::StateAckMsg{static_cast<uint8_t>(current_state)}));
 }
 
+/**
+ * @brief Calculates the Twist command based on the current state and target waypoint.
+ *
+ * This method determines the appropriate linear and angular velocities for the robot.
+ * Currently, it returns a fixed example command. In a full implementation, this would
+ * involve path planning and obstacle avoidance logic based on sensor data and localization.
+ * @return msg::CmdVelMsg The calculated twist command. Returns a zero twist command if
+ *         the state is not RUNNING or if it's deemed unsafe to move.
+ */
 msg::CmdVelMsg MotionControlTask::calculate_twist_command()
 {
   msg::CmdVelMsg cmd_vel_msg;

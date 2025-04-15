@@ -1,3 +1,12 @@
+/**
+ * @file main.cpp
+ * @brief Main entry point for the Autotank application.
+ *
+ * This file initializes the necessary components, including the Broker for communication,
+ * the StateManager for managing task lifecycles, and various tasks responsible for
+ * sensor data processing, localization, and control. It then starts the system and
+ * waits for shutdown.
+ */
 #include <iostream>
 
 #include "protocore/include/broker.h"
@@ -14,6 +23,14 @@
 
 #include <gz/transport.hh>
 
+/**
+ * @brief Main function for the Autotank application.
+ *
+ * Initializes the system components, registers tasks with the StateManager,
+ * starts the tasks, transitions them to the RUNNING state, and waits for
+ * Gazebo Transport shutdown signal before cleaning up.
+ * @return int Returns 0 on successful execution, non-zero otherwise.
+ */
 int main()
 {
   // Initialize the publisher and subscriber broker

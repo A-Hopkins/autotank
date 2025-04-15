@@ -1,33 +1,43 @@
+# CMake build script for the autotank project.
+# This script configures the project, finds dependencies, sets compiler options,
+# defines source files, and creates the executable target.
+
 cmake_minimum_required(VERSION 3.15)
 project(autotank VERSION 0.1.0 LANGUAGES C CXX)
 
-# Set C++ standard
+# Set C++ standard to C++17 and enforce it.
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Define an option to build for Gazebo simulation (default is True).
+# This allows switching between simulation and hardware builds.
 option(USE_SIM "Build for Gazebo simulation" True)
 
-# Disable external testing and examples to speed up the build.
+# Disable building tests and examples from external projects (like protocore)
+# to reduce build time and complexity.
 set(BUILD_TESTING OFF CACHE BOOL "Disable external tests" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "Disable external examples" FORCE)
 
-# Add protocore subdirectory
-# Use the compile defintion USE_CUSTOM_MSG_VARIANT to make protocore build with our version of msg_variant_types.h
+# Add the protocore library located in the external directory.
+# Define USE_CUSTOM_MSG_VARIANT so protocore uses our custom message variant types
+# located in include/msg/msg_variant_types.h instead of its default.
 add_compile_definitions(USE_CUSTOM_MSG_VARIANT)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/protocore protocore_build)
 
-# Add kfplusplus
+# Add the kfplusplus library located in the external directory.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/kfplusplus kfplusplus_build)
 
-# include directories BEFORE the target is created
-# This is necessary to ensure that protocorebuild is built with our version of msg_variant_types.h
+# Specify include directories for the protocore target *before* it's built.
+# This ensures that when protocore is compiled, it finds our custom
+# msg_variant_types.h and other necessary headers from this project first.
 target_include_directories(protocore BEFORE PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/msg"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/external/kfplusplus/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/external"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/msg" # Location of custom msg_variant_types.h
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"     # General project includes
+    "${CMAKE_CURRENT_SOURCE_DIR}/external/kfplusplus/include" # kfplusplus headers
+    "${CMAKE_CURRENT_SOURCE_DIR}/external"    # Other external headers if needed
 )
 
-# Source files
+# Define the list of source files for the main autotank executable.
 set(SOURCES
   src/main.cpp
   src/csc/sensors/imu/imu_task.cpp
@@ -37,10 +47,15 @@ set(SOURCES
   src/csc/localization/localization_task.cpp
 )
 
-# Conditionally include the appropriate factory implementation
+# Conditionally include source files and dependencies based on the USE_SIM option.
 if(USE_SIM)
-  # Find the Gazebo Transport library
+  # If building for simulation:
+  # Find the Gazebo Transport library (version 14 specifically).
+  # The 'QUIET' argument suppresses messages if the package is found.
+  # The 'REQUIRED' argument makes CMake stop with an error if not found.
+  # 'OPTIONAL_COMPONENTS log' specifies optional parts of the library.
   find_package(gz-transport14 QUIET REQUIRED OPTIONAL_COMPONENTS log)
+  # Store the major version number for later use in linking.
   set(GZ_TRANSPORT_VER ${gz-transport14_VERSION_MAJOR})
 
   message(STATUS "Building for Gazebo simulation")

@@ -15,7 +15,7 @@
 * @class OdomTask
 * @brief A task that manages and processes odometry sensor data.
 *
-* The IMUTask class is responsible for:
+* The OdomTask class is responsible for:
 * - Integrating with the odometry sensor.
 * - Receiving and processing odometry data.
 * - Handling state-based odometry operations.
@@ -24,6 +24,12 @@ class OdomTask : public task::Task
 {
 public:
 
+  /**
+   * @brief Factory method to create a shared pointer to an OdomTask instance.
+   *
+   * Initializes the task after creation.
+   * @return A std::shared_ptr<OdomTask> pointing to the newly created instance.
+   */
   static std::shared_ptr<OdomTask> create()
   {
     auto instance = std::shared_ptr<OdomTask>(new OdomTask("OdomTask"));
@@ -57,15 +63,21 @@ public:
 
 protected:
   /**
-   * @brief Constructs an OdomTask instance and initializes the odometry sensor.
+   * @brief Constructs an OdomTask instance.
+   * @param name The name of the task. Defaults to "OdomTask".
    */
   OdomTask(const std::string& name = "OdomTask") : task::Task(name) { }
 
+  /**
+   * @brief Performs initialization steps for the task.
+   *
+   * Subscribes the task to StateMsg messages.
+   */
   void on_initialize() override
   {
     safe_subscribe(msg::Type::StateMsg);
   }
 
 private:
-  Odom odom_sensor; ///< odom sensor instance used for data retrieval and processing.
+  Odom odom_sensor; ///< Instance of the Odom sensor used for data retrieval and processing.
 };

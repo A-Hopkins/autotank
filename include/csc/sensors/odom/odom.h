@@ -42,14 +42,20 @@ public:
   * The actual data retrieval mechanism depends on the implementation (hardware polling, event-driven updates, etc.).
   *
   * @param callback A function that receives odometry data as a `msg::OdomDataMsg`, representing sensor readings.
+  *                 The callback function will be invoked asynchronously whenever new odometry data arrives.
+  *                 It is crucial that the callback function is thread-safe if the underlying implementation
+  *                 uses multiple threads. The `msg::OdomDataMsg` object passed to the callback contains
+  *                 the latest pose (position and orientation) and twist (linear and angular velocities) data.
   */
   void start(std::function<void(const msg::OdomDataMsg&)> callback);
 
   /**
   * @brief Stops the Odometry data stream.
   *
-  * This function halts Odometry data collection. The behavior of stopping (e.g., disabling hardware polling,
-  * unsubscribing from simulation updates, etc.) is implementation-specific.
+  * This function halts Odometry data collection. After calling `stop()`, the previously registered callback
+  * function will no longer be invoked with new data. The behavior of stopping (e.g., disabling hardware polling,
+  * unsubscribing from simulation updates, releasing resources, etc.) is implementation-specific.
+  * It is safe to call `stop()` even if the stream was not started or has already been stopped.
   */
   void stop();
 };

@@ -12,9 +12,18 @@
 
 namespace msg
 {
+  /**
+   * @brief Message structure for commanding velocity.
+   *
+   * This message contains twist information (linear and angular velocity)
+   * typically used to command the movement of a robot or vehicle.
+   */
   DECLARE_MESSAGE_TYPE(CmdVelMsg)
   {
-    // Twist data field.
+    /**
+     * @brief The twist data containing linear and angular velocity commands.
+     * @see common_types::Twist
+     */
     Twist twist;
   };
 }

@@ -1,13 +1,34 @@
+/**
+ * @file imu_task.cpp
+ * @brief Implementation of the IMUTask class.
+ *
+ * This file contains the implementation of the IMUTask class, which is responsible for
+ * managing the IMU sensor, processing its data, and handling state transitions based on
+ * received messages.
+ */
 #include <iostream>
 
 #include "csc/sensors/imu/imu_task.h"
 #include "csc/sensors/imu/imu.h"
 
+/**
+ * @brief Destructor for the IMUTask class.
+ *
+ * Ensures that the IMU sensor is stopped when the task object is destroyed.
+ */
 IMUTask::~IMUTask()
 {
   imu_sensor.stop();
 }
 
+/**
+ * @brief Processes incoming messages for the IMU task.
+ *
+ * Handles different message types, specifically StateMsg for state transitions
+ * and HeartbeatMsg for heartbeat handling. Other message types are logged as unhandled.
+ *
+ * @param msg The message to process.
+ */
 void IMUTask::process_message(const msg::Msg& msg)
 {
 
@@ -15,7 +36,6 @@ void IMUTask::process_message(const msg::Msg& msg)
   {
     case msg::Type::StateMsg:
     {
-      // Handle state message
       transition_to_state(static_cast<task::TaskState>(msg.get_data_as<msg::StateMsg>()->state));
       break;
     }
@@ -32,6 +52,14 @@ void IMUTask::process_message(const msg::Msg& msg)
   }
 }
 
+/**
+ * @brief Transitions the task to a new state.
+ *
+ * Performs actions associated with entering the new state, such as starting or stopping
+ * the IMU sensor. It also updates the current state and publishes a StateAckMsg.
+ *
+ * @param new_state The target state to transition to.
+ */
 void IMUTask::transition_to_state(task::TaskState new_state)
 {
   std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
@@ -41,12 +69,10 @@ void IMUTask::transition_to_state(task::TaskState new_state)
   {
     case task::TaskState::NOT_STARTED:
     {
-      // Perform any actions needed when transitioning to NOT_STARTED
       break;
     }
     case task::TaskState::IDLE:
     {
-      // Perform any actions needed when transitioning to IDLE
       break;
     }
     case task::TaskState::RUNNING:
@@ -71,17 +97,22 @@ void IMUTask::transition_to_state(task::TaskState new_state)
       break;
     }
   }
-
-  // Publish the state transition message
   safe_publish(msg::Msg(this, msg::StateAckMsg{static_cast<uint8_t>(current_state)}));
 }
 
+/**
+ * @brief Processes IMU data received from the sensor.
+ *
+ * If the task is in the RUNNING state, it logs the reception of IMU data
+ * and publishes the data as an IMUDataMsg.
+ *
+ * @param data The IMU data message received from the sensor.
+ */
 void IMUTask::process_imu_data(const msg::IMUDataMsg& data)
 {
   if (current_state == task::TaskState::RUNNING)
   {
     std::cout << "IMU data received: " << data.header.frame_id << std::endl;
-    // Publish the IMU data message
     safe_publish(msg::Msg(this, data));
   }
 }

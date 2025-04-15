@@ -44,10 +44,11 @@ public:
   void process_message(const msg::Msg& msg) override;
 
   /**
-  * @brief Transitions the task to a new state.
-  *
-  * 
-  */
+   * @brief Transitions the task to a new state.
+   *
+   * Manages the internal state of the motion control task.
+   * @param new_state The target state for the task.
+   */
   void transition_to_state(task::TaskState new_state) override;
 
 

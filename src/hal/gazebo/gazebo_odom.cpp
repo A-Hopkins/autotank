@@ -1,3 +1,12 @@
+/**
+ * @file gazebo_odom.cpp
+ * @brief Implementation of the Odom class for interfacing with Gazebo odometry data.
+ *
+ * This file provides the implementation for subscribing to Gazebo's odometry topic,
+ * processing the received messages, and invoking a user-defined callback with
+ * the processed odometry data.
+ */
+
 #include <iostream>
 #include <string>
 #include <gz/msgs.hh>
@@ -6,24 +15,42 @@
 #include "csc/sensors/odom/odom.h"
 #include "msg/odom_msg.h"
 #include "gazebo_helpers.h"
+#include "linalg/matrix.h" // Include for linalg::Matrix
 
+/// Gazebo transport node for communication.
 static gz::transport::Node node;
+/// Callback function to be invoked when new odometry data is received.
 static std::function<void(const msg::OdomDataMsg&)> odom_callback;
+/// Flag indicating whether the odometry processing is active.
 static bool running = false;
 
+/**
+ * @brief Construct a new Odom object.
+ *
+ * Initializes the Odom interface for Gazebo.
+ */
 Odom::Odom() { }
 
+/**
+ * @brief Starts subscribing to the Gazebo odometry topic and processing messages.
+ *
+ * @param callback The function to call with processed odometry data.
+ */
 void Odom::start(std::function<void(const msg::OdomDataMsg&)> callback)
 {
   odom_callback = callback;
   running = true;
 
+  // Subscribe to the "/odom" topic using the Gazebo transport node.
   node.Subscribe<gz::msgs::Odometry>("/odom", [this](const gz::msgs::Odometry &msg)
   {
+    // Ignore messages if processing is stopped.
     if (!running) return;
 
+    // Extract header information from the Gazebo message.
     msg::Header extracted_header = gazebo_helper::extract_header(msg);
 
+    // Construct the OdomDataMsg from the received Gazebo message.
     msg::OdomDataMsg odom_data = {
       .header = {
         .seq = extracted_header.seq,
@@ -33,7 +60,7 @@ void Odom::start(std::function<void(const msg::OdomDataMsg&)> callback)
         },
         .frame_id = extracted_header.frame_id
       },
-      
+      // Populate pose data.
       .pose = {
         .pose = {
           .point = {
@@ -48,9 +75,11 @@ void Odom::start(std::function<void(const msg::OdomDataMsg&)> callback)
             msg.pose().orientation().w()
           }
         },
-        // The covariance matrix is initialized to zero.
+        // Initialize pose covariance matrix to zero.
+        // TODO: Populate covariance from Gazebo message if available.
         .covariance = linalg::Matrix<6, 6>()
       },
+      // Populate twist data.
       .twist = {
         .twist = {
           .linear = {
@@ -64,16 +93,24 @@ void Odom::start(std::function<void(const msg::OdomDataMsg&)> callback)
             msg.twist().angular().z()
           }
         },
-        // The covariance matrix is initialized to zero.
+        // Initialize twist covariance matrix to zero.
+        // TODO: Populate covariance from Gazebo message if available.
         .covariance = linalg::Matrix<6, 6>()
       }
     };
 
+    // Invoke the callback function if it's set.
     if (odom_callback)
     odom_callback(odom_data);
   });
 }
 
+/**
+ * @brief Stops processing incoming odometry messages.
+ *
+ * Sets the running flag to false, preventing further processing in the callback.
+ * Note: This does not unsubscribe from the Gazebo topic.
+ */
 void Odom::stop()
 {
   running = false;

@@ -1,25 +1,43 @@
+/**
+ * @file pose.h
+ * @brief Defines structures for representing 3D pose and pose with covariance.
+ */
 #pragma once
 
 #include "kfplusplus/include/linalg.h"
 
-// Structure that bundles pose and its covariance.
-
+/**
+ * @brief Represents a 3D pose consisting of position and orientation.
+ */
 struct Pose
 {
-  // Position in the x, y, and z directions
+  /**
+   * @brief Position in 3D space (x, y, z).
+   */
   linalg::Vector<3> point;
 
-  // Orientation represented as a quaternion (x, y, z, w)
+  /**
+   * @brief Orientation represented as a quaternion (x, y, z, w).
+   * The w component is the scalar part.
+   */
   linalg::Vector<4> orientation;
 };
 
+/**
+ * @brief Represents a 3D pose with its associated covariance matrix.
+ */
 struct PoseWithCovariance
 {
+  /**
+   * @brief The pose (position and orientation).
+   */
   Pose pose;
-  
-  // Row-major representation of the 6x6 covariance matrix
-  // The orientation parameters use a fixed-axis representation.
-  // In order, the parameters are:
-  // (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis)
+
+  /**
+   * @brief Row-major 6x6 covariance matrix associated with the pose.
+   * The state vector corresponding to this covariance matrix is
+   * (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z axis).
+   * The orientation part uses a fixed-axis representation (roll, pitch, yaw).
+   */
   linalg::Matrix<6, 6> covariance;
 };

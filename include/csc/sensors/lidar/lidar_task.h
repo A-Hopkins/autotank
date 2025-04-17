@@ -38,16 +38,26 @@ public:
   }
 
   /**
-  * @brief Destructor for LidarTask, ensuring proper resource cleanup.
-  */
+   * @brief Destructor for LidarTask, ensuring proper resource cleanup.
+   */
   ~LidarTask();
 
+protected:
   /**
-  * @brief Processes incoming messages based on their type.
-  * 
-  * Handles messages relevant to the LidarTask, potentially including state changes or configuration updates.
-  * @param msg The message to process.
-  */
+   * @brief Constructs a LidarTask instance with a specified name.
+   * 
+   * Initializes the base Task class with the given name. The constructor is protected
+   * to enforce creation through the static `create` method.
+   * @param name The name assigned to this task instance. Defaults to "LidarTask".
+   */
+  LidarTask(const std::string& name = "LidarTask") : task::Task(name) { }
+
+  /**
+   * @brief Processes incoming messages based on their type.
+   * 
+   * Handles messages relevant to the LidarTask, potentially including state changes or configuration updates.
+   * @param msg The message to process.
+   */
   void process_message(const msg::Msg& msg) override;
 
   /**
@@ -58,24 +68,6 @@ public:
    * @param new_state The target state to transition into.
    */
   void transition_to_state(task::TaskState new_state) override;
-
-  /**
-  * @brief Processes incoming lidar sensor data messages.
-  * 
-  * Extracts and handles lidar readings from the provided message.
-  * @param data A LidarDataMsg object containing the lidar sensor readings.
-  */
-  void process_lidar_data(const msg::LidarDataMsg& data);
-
-protected:
-  /**
-  * @brief Constructs a LidarTask instance with a specified name.
-  * 
-  * Initializes the base Task class with the given name. The constructor is protected
-  * to enforce creation through the static `create` method.
-  * @param name The name assigned to this task instance. Defaults to "LidarTask".
-  */
-  LidarTask(const std::string& name = "LidarTask") : task::Task(name) { }
 
   /**
    * @brief Performs initial setup for the LidarTask.
@@ -90,4 +82,12 @@ protected:
 
 private:
   Lidar lidar_sensor; ///< Instance of the Lidar sensor driver used for data acquisition and interaction.
+
+  /**
+   * @brief Processes incoming lidar sensor data messages.
+   * 
+   * Extracts and handles lidar readings from the provided message.
+   * @param data A LidarDataMsg object containing the lidar sensor readings.
+   */
+  void process_lidar_data(const msg::LidarDataMsg& data);
 };

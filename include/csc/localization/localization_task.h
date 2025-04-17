@@ -2,12 +2,16 @@
  * @file localization_task.h
  * @brief Defines the LocalizationTask class, responsible for handling localization operations
  *
- * The LocalizationTask class extends BaseTask and determines the robots pose and velocity given
- * sensor data.
+ * The LocalizationTask class extends BaseTask and determines the robot's pose and velocity by
+ * fusing IMU and odometry data, using an Extended Kalman Filter (EKF) based on kfplusplus.
+ * It also processes incoming control commands to predict state evolution over time.
  */
 
 #pragma once
+#include <chrono>
+
 #include "protocore/include/task.h"
+#include "kfplusplus/include/kfplusplus.h"
 
 #include "msg/cmdvel_msg.h"
 #include "msg/odom_msg.h"
@@ -45,9 +49,18 @@ public:
   }
 
   /**
-* @brief Destructor for LocalizationTask, ensuring proper resource cleanup.
-*/
+  * @brief Destructor for LocalizationTask, ensuring proper resource cleanup.
+  */
   ~LocalizationTask();
+
+  
+  
+protected:
+  /**
+   * @brief Constructs a LocalizationTask instance.
+   * @param name The name assigned to this task instance. Defaults to "LocalizationTask".
+   */
+  LocalizationTask(const std::string& name = "LocalizationTask") : task::Task(name) { }
 
   /**
   * @brief Processes incoming messages relevant to localization.
@@ -67,14 +80,6 @@ public:
    */
   void transition_to_state(task::TaskState new_state) override;
 
-
-protected:
-  /**
-   * @brief Constructs a LocalizationTask instance.
-   * @param name The name assigned to this task instance. Defaults to "LocalizationTask".
-   */
-  LocalizationTask(const std::string& name = "LocalizationTask") : task::Task(name) { }
-
   /**
    * @brief Performs initialization steps for the LocalizationTask.
    *
@@ -86,12 +91,61 @@ protected:
     safe_subscribe(msg::Type::StateMsg);
     safe_subscribe(msg::Type::OdomDataMsg);
     safe_subscribe(msg::Type::IMUDataMsg);
-    safe_subscribe(msg::Type::LidarDataMsg);
     safe_subscribe(msg::Type::CmdVelMsg);
+
+    // initial process noise (Q):
+    // position variance ~ (0.01 m)^2, heading ~(0.01 rad)^2, velocity ~(0.1 m/s)^2, yaw-rate ~(0.1 rad/s)^2
+    Q = linalg::Matrix<STATE_DIM, STATE_DIM>();
+    Q(0,0) = 1e-4; Q(1,1) = 1e-4;
+    Q(2,2) = 1e-4;
+    Q(3,3) = 1e-2;
+    Q(4,4) = 1e-2;
+    ekf.set_process_noise(Q);
+
+    // initial covariance P: 
+    // position ~1 m^2, heading ~(0.1 rad)^2, velocity ~(0.1 m/s)^2, yaw-rate ~(0.1 rad/s)^2
+    auto P0 = linalg::Matrix<STATE_DIM, STATE_DIM>::identity();
+    P0(0,0) = 1.0;  P0(1,1) = 1.0;
+    P0(2,2) = 1e-2;
+    P0(3,3) = 1e-2;
+    P0(4,4) = 1e-2;
+    ekf.set_covariance(P0);
+
+    // default measurement noise (can override later)
+    R_imu  = linalg::Matrix<IMU_MEASUREMENT_DIM, IMU_MEASUREMENT_DIM>::identity() * 1e-2;
+    R_odom = linalg::Matrix<ODOM_MEASUREMENT_DIM, ODOM_MEASUREMENT_DIM>::identity() * 1e-2;
   }
 
 private:
-  // TODO: Add private members for storing the robot's state estimate (pose, velocity),
-  // sensor data buffers, and potentially the state estimation filter (e.g., EKF).
+  msg::LocalizationEstimateMsg current_state_est{};        ///< Current state of the localization task
+  msg::CmdVelMsg last_cmd_vel_msg{};                       ///< Last command velocity message
+  std::chrono::steady_clock::time_point last_time;         ///< Timestamp for prediction dt
+  std::chrono::steady_clock::time_point last_cmd_vel_time; ///< Last command velocity time
+
+  // EKF dimensions
+  static constexpr size_t STATE_DIM            = 5; ///< [x, y, θ, v, ω]
+  static constexpr size_t CONTROL_DIM          = 6; ///< [vx, vy, vz, wx, wy, wz]
+  static constexpr size_t IMU_MEASUREMENT_DIM  = 2; ///< [θ, ω]
+  static constexpr size_t ODOM_MEASUREMENT_DIM = 5; ///< [x, y, θ, v, ω]
+
+  /**
+   * @brief Extended Kalman Filter instance for state estimation.
+   * 
+   * This filter is used to predict and update the robot's state based on sensor data
+   * and command velocity. The filter is now configured for a 13D state space (3D position,
+   * 4D orientation, 3D linear velocity, 3D angular velocity) and a 6D control space (3D linear,
+   * 3D angular).
+   */
+  kfplusplus::ExtendedKalmanFilter<STATE_DIM, CONTROL_DIM> ekf;
+  // Process noise covariance (Q)
+  linalg::Matrix<STATE_DIM, STATE_DIM> Q;
+
+  // Measurement noise covariances
+  linalg::Matrix<IMU_MEASUREMENT_DIM, IMU_MEASUREMENT_DIM> R_imu;
+  linalg::Matrix<ODOM_MEASUREMENT_DIM, ODOM_MEASUREMENT_DIM> R_odom;
+
+  void handle_sensor_data(const msg::Msg& sensor_msg);
+  void handle_cmd_vel_data(const msg::CmdVelMsg* cmd_vel_data);
+  void publish_estimate();
 
 };

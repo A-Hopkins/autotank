@@ -33,14 +33,20 @@ public:
   }
 
   /**
- * @brief Destructor for MotionControlTask, ensuring proper resource cleanup.
- */
+   * @brief Destructor for MotionControlTask, ensuring proper resource cleanup.
+   */
   ~MotionControlTask();
 
+protected:
   /**
- * @brief Processes incoming messages.
- * @param msg The message to process.
- */
+   * @brief Constructs an MotionControlTask instance
+   */
+  MotionControlTask(const std::string& name = "MotionControlTask") : task::Task(name) { }
+
+  /**
+   * @brief Processes incoming messages.
+   * @param msg The message to process.
+   */
   void process_message(const msg::Msg& msg) override;
 
   /**
@@ -51,12 +57,6 @@ public:
    */
   void transition_to_state(task::TaskState new_state) override;
 
-
-protected:
-  /**
- * @brief Constructs an MotionControlTask instance
- */
-MotionControlTask(const std::string& name = "MotionControlTask") : task::Task(name) { }
 
   void on_initialize() override
   {

@@ -109,12 +109,25 @@ void Lidar::start(std::function<void(const msg::LidarDataMsg&)> callback)
 
     msg::Header extracted_header = gazebo_helper::extract_header(msg);
 
+    // Check to see if the sim time conversion needs to be done
+    if (!gazebo_helper::g_t0_wall_set && !gazebo_helper::g_t0_sim_set)
+    {
+      gazebo_helper::g_t0_wall = std::chrono::steady_clock::now();
+      gazebo_helper::g_t0_sim_sec = msg.header().stamp().sec();
+      gazebo_helper::g_t0_sim_nsec = msg.header().stamp().nsec();
+      gazebo_helper::g_t0_wall_set = true;
+      gazebo_helper::g_t0_sim_set = true;
+    }
+
+    // Convert Gazebo time to wall time
+    msg::Timestamp t = gazebo_helper::sim_to_walltime(msg.header().stamp().sec(), msg.header().stamp().nsec());
+
     msg::LidarDataMsg lidar_data = {
       .header = {
         .seq = extracted_header.seq,
         .stamp = {
-          .sec = extracted_header.stamp.sec,
-          .nsec = extracted_header.stamp.nsec
+          .sec = t.sec,
+          .nsec = t.nsec
         },
         .frame_id = extracted_header.frame_id
       },

@@ -12,14 +12,14 @@
 #include "odom.h"
 
 /**
-* @class OdomTask
-* @brief A task that manages and processes odometry sensor data.
-*
-* The OdomTask class is responsible for:
-* - Integrating with the odometry sensor.
-* - Receiving and processing odometry data.
-* - Handling state-based odometry operations.
-*/
+ * @class OdomTask
+ * @brief A task that manages and processes odometry sensor data.
+ *
+ * The OdomTask class is responsible for:
+ * - Integrating with the odometry sensor.
+ * - Receiving and processing odometry data.
+ * - Handling state-based odometry operations.
+ */
 class OdomTask : public task::Task
 {
 public:
@@ -42,6 +42,13 @@ public:
    */
   ~OdomTask();
 
+protected:
+  /**
+   * @brief Constructs an OdomTask instance.
+   * @param name The name of the task. Defaults to "OdomTask".
+   */
+  OdomTask(const std::string& name = "OdomTask") : task::Task(name) { }
+
   /**
    * @brief Processes incoming messages.
    * @param msg The message to process.
@@ -49,24 +56,11 @@ public:
   void process_message(const msg::Msg& msg) override;
 
   /**
-  * @brief Transitions the task to a new state.
-  *
-  * 
-  */
+   * @brief Transitions the task to a new state.
+   *
+   * 
+   */
   void transition_to_state(task::TaskState new_state) override;
-
-  /**
-   * @brief Processes incoming odometry sensor data.
-   * @param data An OdomDataMsg object representing odometry sensor readings.
-   */
-  void process_odom_data(const msg::OdomDataMsg& data);
-
-protected:
-  /**
-   * @brief Constructs an OdomTask instance.
-   * @param name The name of the task. Defaults to "OdomTask".
-   */
-  OdomTask(const std::string& name = "OdomTask") : task::Task(name) { }
 
   /**
    * @brief Performs initialization steps for the task.
@@ -80,4 +74,10 @@ protected:
 
 private:
   Odom odom_sensor; ///< Instance of the Odom sensor used for data retrieval and processing.
+
+  /**
+   * @brief Processes incoming odometry sensor data.
+   * @param data An OdomDataMsg object representing odometry sensor readings.
+   */
+  void process_odom_data(const msg::OdomDataMsg& data);
 };

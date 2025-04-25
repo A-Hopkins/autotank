@@ -118,9 +118,7 @@ protected:
 
 private:
   msg::LocalizationEstimateMsg current_state_est{};        ///< Current state of the localization task
-  msg::CmdVelMsg last_cmd_vel_msg{};                       ///< Last command velocity message
   std::chrono::steady_clock::time_point last_time;         ///< Timestamp for prediction dt
-  std::chrono::steady_clock::time_point last_cmd_vel_time; ///< Last command velocity time
 
   // EKF dimensions
   static constexpr size_t STATE_DIM            = 5; ///< [x, y, θ, v, ω]

@@ -61,6 +61,7 @@ protected:
   void on_initialize() override
   {
     safe_subscribe(msg::Type::StateMsg);
+    safe_subscribe(msg::Type::LocalizationEstimateMsg);
   }
 
 private:

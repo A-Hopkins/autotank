@@ -45,6 +45,8 @@ set(SOURCES
   src/csc/sensors/lidar/lidar_task.cpp
   src/csc/control/motion_control/motion_control_task.cpp
   src/csc/localization/localization_task.cpp
+  src/csc/mapping/mapping_task.cpp
+  src/csc/services/map_service/map_service.cpp
 )
 
 # Conditionally include source files and dependencies based on the USE_SIM option.

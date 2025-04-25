@@ -4,6 +4,7 @@
  */
 #include <iostream>
 #include "csc/localization/localization_task.h"
+#include "core/scoped_timer.h"
 
 /**
  * @brief Destructor for LocalizationTask.
@@ -15,8 +16,7 @@ LocalizationTask::~LocalizationTask()
 /**
  * @brief Processes incoming messages for the LocalizationTask.
  *
- * Handles state transitions, heartbeat messages, and potentially sensor data
- * and command velocity messages in the future for the localization algorithm.
+ * Handles state transitions, heartbeat messages, sensor data and command velocity messages.
  * @param msg The message received by the task.
  */
 void LocalizationTask::process_message(const msg::Msg &msg)
@@ -108,14 +108,17 @@ void LocalizationTask::transition_to_state(task::TaskState new_state)
 
 void LocalizationTask::handle_sensor_data(const msg::Msg &sensor_msg)
 {
+  ScopedTimer timer("LocalizationTask::handle_sensor_data");
   switch (sensor_msg.get_type())
   {
     case msg::Type::IMUDataMsg:
     {
       auto imu = sensor_msg.get_data_as<msg::IMUDataMsg>();
       // extract yaw from quaternion
-      double x = imu->orientation(0), y = imu->orientation(1),
-             z = imu->orientation(2), w = imu->orientation(3);
+      double x = imu->orientation(0);
+      double y = imu->orientation(1);
+      double z = imu->orientation(2);
+      double w = imu->orientation(3);
       double siny = 2*(w*z + x*y);
       double cosy = w*w + x*x - y*y - z*z;
       double yaw = std::atan2(siny, cosy);
@@ -167,7 +170,7 @@ void LocalizationTask::handle_sensor_data(const msg::Msg &sensor_msg)
       auto h = [](auto const &x)
       {
         linalg::Vector<ODOM_MEASUREMENT_DIM> pred;
-        for (size_t i=0;i<ODOM_MEASUREMENT_DIM;++i)
+        for (size_t i=0; i < ODOM_MEASUREMENT_DIM; ++i)
         {
           pred(i) = x(i);
         }
@@ -192,6 +195,7 @@ void LocalizationTask::handle_sensor_data(const msg::Msg &sensor_msg)
 
 void LocalizationTask::handle_cmd_vel_data(const msg::CmdVelMsg *cmd_vel_data)
 {
+  ScopedTimer timer("LocalizationTask::handle_cmd_vel_data");
   if (!cmd_vel_data) return;
 
   // --- compute dt ---
@@ -279,11 +283,13 @@ void LocalizationTask::publish_estimate()
 
   // 5) zero out both covariances
   for (int i = 0; i < 6; ++i)
+  {
     for (int j = 0; j < 6; ++j)
     {
       current_state_est.est_pose.covariance(i,j) = 0.0;
       current_state_est.est_twist.covariance(i,j) = 0.0;
     }
+  }
 
   // 6) pose covariance:
   //    [  P(0:1,0:1)    0      ]

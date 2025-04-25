@@ -32,6 +32,11 @@ void MotionControlTask::process_message(const msg::Msg &msg)
       handle_heartbeat(msg.get_data_as<msg::HeartbeatMsg>());
       break;
     }
+    case msg::Type::LocalizationEstimateMsg:
+    {
+      // TODO Process this
+      break;
+    }
 
     default:
     {

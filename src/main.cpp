@@ -16,12 +16,11 @@
 #include "csc/sensors/imu/imu_task.h"
 #include "csc/sensors/odom/odom_task.h"
 #include "csc/sensors/lidar/lidar_task.h"
-
 #include "csc/localization/localization_task.h"
-
 #include "csc/mapping/mapping_task.h"
-
 #include "csc/control/motion_control/motion_control_task.h"
+#include "csc/safety_monitor/safety_monitor_task.h"
+#include "csc/navigation/navigation_task.h"
 
 #include <gz/transport.hh>
 
@@ -47,6 +46,8 @@ int main()
   std::shared_ptr<MotionControlTask> motion_control_task = MotionControlTask::create();
   std::shared_ptr<LocalizationTask> localization_task = LocalizationTask::create();
   std::shared_ptr<MappingTask> mapping_task = MappingTask::create();
+  std::shared_ptr<SafetyMonitorTask> safety_monitor_task = SafetyMonitorTask::create();
+  std::shared_ptr<NavigationTask> navigation_task = NavigationTask::create();
 
   // Register the heart beat task with the state manager
   state_manager->set_task_registration_observer(heart_beat_task);
@@ -59,6 +60,8 @@ int main()
   state_manager->register_task(motion_control_task);
   state_manager->register_task(localization_task);
   state_manager->register_task(mapping_task);
+  state_manager->register_task(safety_monitor_task);
+  state_manager->register_task(navigation_task);
 
   // Initialize the state manager and start all tasks
   state_manager->initialize();

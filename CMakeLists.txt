@@ -47,6 +47,8 @@ set(SOURCES
   src/csc/localization/localization_task.cpp
   src/csc/mapping/mapping_task.cpp
   src/csc/services/map_service/map_service.cpp
+  src/csc/safety_monitor/safety_monitor_task.cpp
+  src/csc/navigation/navigation_task.cpp
 )
 
 # Conditionally include source files and dependencies based on the USE_SIM option.

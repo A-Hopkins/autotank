@@ -73,7 +73,7 @@ void MapService::insert_scan(const msg::LidarDataMsg& scan, const Pose& pose)
   // For each beam in the scan
   for (uint32_t i = 0; i < scan.ranges_count; ++i)
   {
-    float r = scan.ranges[i];
+    double r = scan.ranges[i];
     if (!std::isfinite(r) || r < scan.range_min || r > scan.range_max)
     {
       continue;

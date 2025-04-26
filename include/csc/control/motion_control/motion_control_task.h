@@ -10,6 +10,8 @@
 #pragma once
 #include "protocore/include/task.h"
 #include "msg/cmdvel_msg.h"
+#include "msg/localization_estimate_msg.h"
+#include "msg/safety_alert_msg.h"
 
 #include "diff_drive.h"
 
@@ -62,6 +64,7 @@ protected:
   {
     safe_subscribe(msg::Type::StateMsg);
     safe_subscribe(msg::Type::LocalizationEstimateMsg);
+    safe_subscribe(msg::Type::SafetyAlertMsg);
   }
 
 private:

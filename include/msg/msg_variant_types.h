@@ -40,6 +40,7 @@
 #include "lidar_msg.h"
 #include "cmdvel_msg.h"
 #include "localization_estimate_msg.h"
+#include "safety_alert_msg.h"
 
 namespace msg
 {
@@ -48,6 +49,7 @@ namespace msg
   #define MESSAGE_VARIANT_TYPES(X)      \
       X(StateMsg,                 100), \
       X(StateAckMsg,               99), \
+      X(SafetyAlertMsg,            90), \
       X(HeartbeatMsg,              50), \
       X(HeartbeatAckMsg,           49), \
       X(LocalizationEstimateMsg,   20), \

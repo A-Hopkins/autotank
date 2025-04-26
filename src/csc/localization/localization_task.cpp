@@ -257,23 +257,23 @@ void LocalizationTask::handle_cmd_vel_data(const msg::CmdVelMsg *cmd_vel_data)
 
 void LocalizationTask::publish_estimate()
 {
-  // 1) grab filter output
+  // grab filter output
   auto x = ekf.get_state();          // [x, y, θ, v, ω]
   auto P = ekf.get_covariance();     // 5×5
 
-  // 2) fill position (we assume z=0 for a ground robot)
+  // fill position (we assume z=0 for a ground robot)
   current_state_est.est_pose.pose.point(0) = x(0);
   current_state_est.est_pose.pose.point(1) = x(1);
   current_state_est.est_pose.pose.point(2) = 0.0;
 
-  // 3) convert yaw -> quaternion [x,y,z,w]
+  // convert yaw -> quaternion [x,y,z,w]
   double half = x(2) * 0.5;
   current_state_est.est_pose.pose.orientation(0) = 0.0;
   current_state_est.est_pose.pose.orientation(1) = 0.0;
   current_state_est.est_pose.pose.orientation(2) = std::sin(half);
   current_state_est.est_pose.pose.orientation(3) = std::cos(half);
 
-  // 4) fill twist: forward velocity + yaw‐rate
+  // fill twist: forward velocity + yaw‐rate
   current_state_est.est_twist.twist.linear(0)  = x(3);
   current_state_est.est_twist.twist.linear(1)  = 0.0;
   current_state_est.est_twist.twist.linear(2)  = 0.0;
@@ -281,7 +281,7 @@ void LocalizationTask::publish_estimate()
   current_state_est.est_twist.twist.angular(1) = 0.0;
   current_state_est.est_twist.twist.angular(2) = x(4);
 
-  // 5) zero out both covariances
+  // zero out both covariances
   for (int i = 0; i < 6; ++i)
   {
     for (int j = 0; j < 6; ++j)
@@ -291,8 +291,8 @@ void LocalizationTask::publish_estimate()
     }
   }
 
-  // 6) pose covariance:
-  //    [  P(0:1,0:1)    0      ]
+  // pose covariance:
+  //    [  P(0:1,0:1)    0    ]
   //    [    0      yawCov_z  ]
   // translation (x,y)
   current_state_est.est_pose.covariance(0,0) = P(0,0);
@@ -301,7 +301,7 @@ void LocalizationTask::publish_estimate()
   // rotation about z only:
   current_state_est.est_pose.covariance(5,5) = P(2,2);
 
-  // 7) twist covariance:
+  // twist covariance:
   //    [ vVar   0     ]
   //    [   0   ωVar   ]
   current_state_est.est_twist.covariance(0,0) = P(3,3); // forward speed var

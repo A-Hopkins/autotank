@@ -2,25 +2,25 @@
  * @file mapping_task.h
  * @brief Defines the MappingTask class for online occupancy‐grid mapping.
  *
- * Subscribes to LiDAR scans and localization estimates, and maintains
- * a fixed‐size occupancy grid.
+ * Subscribes to LiDAR scans and localization estimates, and operates with the
+ * mapping service to update the systems map.
  */
 
 #pragma once
-#include <array>
 
 #include "protocore/include/task.h"
 #include "msg/lidar_msg.h"
 #include "msg/localization_estimate_msg.h"
 #include "msg/common_types/pose.h"
 
-
-
 /**
  * @class MappingTask
- * @brief 
+ * @brief Implements a task that performs online occupancy-grid mapping.
  *
- * 
+ * The MappingTask subscribes to LiDAR data and localization estimates. Upon receiving
+ * this information, it utilizes the MapService to update the internal occupancy-grid
+ * representation of the environment. The task manages its lifecycle through different
+ * states and processes incoming messages accordingly.
  */
 class MappingTask : public task::Task
 {
@@ -72,10 +72,26 @@ protected:
   }
 
 private:
-  bool pose_initialized = false;
-  Pose pose_est{};
+  bool pose_initialized = false; ///< Flag indicating whether an initial localization estimate has been received.
+  Pose pose_est{};               ///< Stores the current best estimate of the robot's pose.
   
-
+  /**
+   * @brief Handles incoming LiDAR data messages.
+   *
+   * If a valid localization estimate has been received, this method calls the
+   * MapService to update the occupancy grid with the new LiDAR scan and the
+   * corresponding robot pose.
+   * @param lidar_data A pointer to the received LidarDataMsg.
+   */
   void handle_lidar_data(const msg::LidarDataMsg *lidar_data);
+
+  /**
+   * @brief Handles incoming localization estimate messages.
+   *
+   * This method updates the internal pose estimate of the robot with the
+   * received localization data. It also sets a flag indicating that the pose
+   * has been initialized.
+   * @param loc_est_data A pointer to the received LocalizationEstimateMsg.
+   */
   void handle_localization_data(const msg::LocalizationEstimateMsg *loc_est_data);
 };

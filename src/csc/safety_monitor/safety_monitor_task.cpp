@@ -94,7 +94,7 @@ void SafetyMonitorTask::handle_lidar_data(const msg::LidarDataMsg *lidar_data)
   // forward speed and covariance margin
   double speed    = std::max(0.0, loc_est.est_twist.twist.linear(0));
   const auto& C  = loc_est.est_pose.covariance;
-  double sigma    = std::sqrt(C(0,0) + C(1,1));  
+  double sigma    = std::sqrt(C(0,0) + C(1,1));
   constexpr double K = 2.0; // 2sigma margin
   constexpr double MARGIN = 0.1; // 10cm extra safety
   double collision_cutoff = lidar_data->range_min + MARGIN;

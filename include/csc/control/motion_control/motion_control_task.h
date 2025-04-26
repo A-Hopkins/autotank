@@ -12,6 +12,7 @@
 #include "msg/cmdvel_msg.h"
 #include "msg/localization_estimate_msg.h"
 #include "msg/safety_alert_msg.h"
+#include "msg/waypoint_msg.h"
 
 #include "diff_drive.h"
 
@@ -65,10 +66,36 @@ protected:
     safe_subscribe(msg::Type::StateMsg);
     safe_subscribe(msg::Type::LocalizationEstimateMsg);
     safe_subscribe(msg::Type::SafetyAlertMsg);
+    safe_subscribe(msg::Type::WaypointMsg);
   }
 
 private:
-  DiffDrive diff_drive; ///< The DiffDrive instance for handling differential drive operations.
+  DiffDrive diff_drive;                           ///< The DiffDrive instance for handling differential drive operations.
+  msg::LocalizationEstimateMsg current_loc_est{}; ///< Latest localization estimate
+  msg::WaypointMsg current_waypoint{};            ///< Latest waypoint command
+  msg::CmdVelMsg last_cmd_vel_msg{};              ///< Last command velocity sent to the diffdrive
+
+  bool loc_est_valid{false};       ///< True if a localization estimate has been received
+  bool safety_alert_active{false}; ///< True if a safety alert is active
+  bool waypoint_valid{false};      ///< True if a waypoint command has been received
+
+  /**
+   * @brief Handles a new localization estimate message.
+   * @param loc_est_msg Pointer to the received LocalizationEstimateMsg.
+   */
+  void handle_localization_estimate(const msg::LocalizationEstimateMsg* loc_est_msg);
+
+  /**
+   * @brief Handles a new safety alert message.
+   * @param alert_msg Pointer to the received SafetyAlertMsg.
+   */
+  void handle_safety_alert(const msg::SafetyAlertMsg* alert_msg);
+
+  /**
+   * @brief Handles a new waypoint message.
+   * @param waypoint_msg Pointer to the received WaypointMsg.
+   */
+  void handle_waypoint(const msg::WaypointMsg* waypoint_msg);
 
   /**
    * @brief Calculates the Twist command based on current state and target.
@@ -76,3 +103,4 @@ private:
    */
   msg::CmdVelMsg calculate_twist_command();
 };
+

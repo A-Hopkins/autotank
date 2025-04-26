@@ -4,7 +4,6 @@
  */
 #include <iostream>
 #include "csc/localization/localization_task.h"
-#include "core/scoped_timer.h"
 
 /**
  * @brief Destructor for LocalizationTask.
@@ -108,7 +107,6 @@ void LocalizationTask::transition_to_state(task::TaskState new_state)
 
 void LocalizationTask::handle_sensor_data(const msg::Msg &sensor_msg)
 {
-  ScopedTimer timer("LocalizationTask::handle_sensor_data");
   switch (sensor_msg.get_type())
   {
     case msg::Type::IMUDataMsg:
@@ -195,7 +193,6 @@ void LocalizationTask::handle_sensor_data(const msg::Msg &sensor_msg)
 
 void LocalizationTask::handle_cmd_vel_data(const msg::CmdVelMsg *cmd_vel_data)
 {
-  ScopedTimer timer("LocalizationTask::handle_cmd_vel_data");
   if (!cmd_vel_data) return;
 
   // --- compute dt ---

@@ -6,8 +6,6 @@
 #include "csc/mapping/mapping_task.h"
 #include "csc/services/map_service/map_service.h"
 
-#include "core/scoped_timer.h"
-
 /**
  * @brief Destructor for MappingTask.
  */
@@ -118,7 +116,6 @@ void MappingTask::handle_localization_data(const msg::LocalizationEstimateMsg* l
 
 void MappingTask::handle_lidar_data(const msg::LidarDataMsg *lidar_data)
 {
-  ScopedTimer timer("MappingTask::process_lidar_data");
 
   if (!pose_initialized) return;
 

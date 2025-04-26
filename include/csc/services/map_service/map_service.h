@@ -36,6 +36,7 @@
 class MapService
 {
 public:
+  static constexpr size_t MAX_FRONTIERS = 50; ///< Max frontiers we’ll ever collect
   /**
    * @struct Path
    * @brief A heap-free, pool-allocated singly-linked list of waypoints.
@@ -180,16 +181,16 @@ public:
      */
     struct Iterator
     {
-      using value_type        = Pose;
-      using reference         = const Pose&;
-      using pointer           = const Pose*;
+      using value_type = Pose;
+      using reference = const Pose&;
+      using pointer = const Pose*;
       using iterator_category = std::forward_iterator_tag;
-      using difference_type   = std::ptrdiff_t;
+      using difference_type = std::ptrdiff_t;
   
       explicit Iterator(Node* c) : cur(c) {}
   
       reference operator*() const { return cur->pose; }
-      pointer   operator->() const { return &cur->pose; }
+      pointer operator->() const { return &cur->pose; }
   
       Iterator& operator++()
       {
@@ -256,7 +257,7 @@ public:
    *
    * Readers use the sequence lock to ensure consistency:
    *  do {
-   *    before = seq.load();             // must be even
+   *    before = seq.load(); // must be even
    *    perform planning on occupancy_grid
    *    after  = seq.load();
    *  } while (before != after);
@@ -266,6 +267,14 @@ public:
    * @return       A Path of waypoints (heap-free, uses MemoryPool).
    */
   Path plan_path(const Pose& start, const Pose& goal);
+
+  /**
+   * @brief Find up to `max_frontiers` free‐unknown boundary cells (frontiers).
+   * @param origin  The robot’s current pose (for later filtering or sorting).
+   * @param max_frontiers  Maximum number of frontiers to push (default = MAX_FRONTIERS).
+   * @return APath of frontier poses (uses internal MemoryPool).
+   */
+  Path find_frontiers(const Pose& origin, size_t max_frontiers = MAX_FRONTIERS);
 
 private:
   static constexpr size_t MAX_NODE_LEN = 200;    ///< Max waypoints per path

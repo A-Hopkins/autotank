@@ -335,3 +335,46 @@ MapService::Path MapService::run_a_star(const Pose& start, const Pose& goal)
 
   return path;
 }
+
+MapService::Path MapService::find_frontiers(const Pose& origin, size_t max_frontiers)
+{
+  Path result{path_pool};
+
+  // helper to test if any 4-neighbor is UNKNOWN
+  auto has_unknown_neighbor = [&](int ix, int iy)
+  {
+    constexpr int d[4][2] = {{1,0},{-1,0},{0,1},{0,-1}};
+    for (auto &o : d)
+    {
+      int nx = ix + o[0], ny = iy + o[1];
+
+      if (nx >= 0 && nx < GRID_WIDTH && ny >= 0 && ny < GRID_HEIGHT)
+      {
+        size_t idx = ny * GRID_WIDTH + nx;
+        if (occupancy_grid[idx] == CellStatus::UNKNOWN)
+        {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  // scan the entire grid
+  for (int y=0; y<GRID_HEIGHT && result.get_path_size()<max_frontiers; ++y)
+  {
+    for (int x=0; x<GRID_WIDTH && result.get_path_size()<max_frontiers; ++x)
+    {
+      size_t idx = y * GRID_WIDTH + x;
+      if (occupancy_grid[idx] == CellStatus::FREE && has_unknown_neighbor(x,y))
+      {
+        // convert cell to world pose
+        Pose p;
+        p.point(0) = x * GRID_RESOLUTION  -  GRID_WIDTH * 0.5f * GRID_RESOLUTION;
+        p.point(1) = y * GRID_RESOLUTION  -  GRID_HEIGHT * 0.5f * GRID_RESOLUTION;
+        result.push_back(p);
+      }
+    }
+  }
+  return result;
+}

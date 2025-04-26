@@ -115,7 +115,7 @@ void OdomTask::process_odom_data(const msg::OdomDataMsg& data)
 {
   if (current_state == task::TaskState::RUNNING)
   {
-    std::cout << "Odom data received: " << data.header.frame_id << std::endl;
+    // std::cout << "Odom data received: " << data.header.frame_id << std::endl;
     safe_publish(msg::Msg(this, data));
   }
 }

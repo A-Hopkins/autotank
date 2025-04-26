@@ -112,7 +112,7 @@ void IMUTask::process_imu_data(const msg::IMUDataMsg& data)
 {
   if (current_state == task::TaskState::RUNNING)
   {
-    std::cout << "IMU data received: " << data.header.frame_id << std::endl;
+    // std::cout << "IMU data received: " << data.header.frame_id << std::endl;
     safe_publish(msg::Msg(this, data));
   }
 }

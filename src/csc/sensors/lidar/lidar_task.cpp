@@ -107,7 +107,7 @@ void LidarTask::process_lidar_data(const msg::LidarDataMsg& data)
 {
   if (current_state == task::TaskState::RUNNING)
   {
-    std::cout << "Lidar data received: " << data.header.frame_id << std::endl;
+    // std::cout << "Lidar data received: " << data.header.frame_id << std::endl;
     safe_publish(msg::Msg(this, data));
   }
 }

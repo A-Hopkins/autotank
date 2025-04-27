@@ -13,6 +13,10 @@
 #include "msg/localization_estimate_msg.h"
 #include "msg/common_types/pose.h"
 
+#ifdef UNIT_TESTING
+#include <gtest/gtest_prod.h>
+#endif
+
 /**
  * @class MappingTask
  * @brief Implements a task that performs online occupancy-grid mapping.
@@ -72,6 +76,13 @@ protected:
   }
 
 private:
+
+#ifdef UNIT_TESTING
+  FRIEND_TEST(MappingTaskTest, DefaultState);
+  FRIEND_TEST(MappingTaskTest, LocalizationInitializesPose);
+  FRIEND_TEST(MappingTaskTest, LidarIgnoredUntilLocalized);
+#endif
+
   bool pose_initialized = false; ///< Flag indicating whether an initial localization estimate has been received.
   Pose pose_est{};               ///< Stores the current best estimate of the robot's pose.
   

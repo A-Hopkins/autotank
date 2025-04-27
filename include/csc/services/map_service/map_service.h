@@ -19,6 +19,9 @@
 #include "msg/lidar_msg.h"
 #include "msg/common_types/pose.h"
 
+#ifdef UNIT_TESTING
+#include <gtest/gtest_prod.h>
+#endif
 
 /**
  * @class MapService
@@ -276,7 +279,35 @@ public:
    */
   Path find_frontiers(const Pose& origin, size_t max_frontiers = MAX_FRONTIERS);
 
+  /**
+   * @brief get sequence from sequence lock
+   * @return sequence number
+   */
+  uint32_t get_sequence() const { return seq.load(std::memory_order_acquire); }
+
+#ifdef UNIT_TESTING
+  /// Test‐only: reset the grid & sequence counter
+  void reset_for_test()
+  {
+    occupancy_grid.fill(CellStatus::UNKNOWN);
+    seq.store(0, std::memory_order_relaxed);
+  }
+
+  /// Test‐only: Inspect a single cell
+  CellStatus get_cell(int gx, int gy) const
+  {
+    return occupancy_grid[gy * GRID_WIDTH + gx];
+  }
+
+  /// Test‐only: Force‐set a cell
+  void set_cell(int gx, int gy, CellStatus s)
+  {
+    occupancy_grid[gy * GRID_WIDTH + gx] = s;
+  }
+#endif
+
 private:
+
   static constexpr size_t MAX_NODE_LEN = 200;    ///< Max waypoints per path
   static constexpr int GRID_WIDTH = 200;         ///< Grid columns
   static constexpr int GRID_HEIGHT = 200;        ///< Grid rows
@@ -329,4 +360,34 @@ private:
    *               start to goal, or an empty Path on failure.
    */
   Path run_a_star(const Pose& start, const Pose& goal);
+
+  /**
+   * @brief Convert a single world‐coordinate to a [0..grid_size) index,
+   *        using floor() followed by clamping.
+   */
+  static int world_coord_to_index(double world_coord, int grid_size)
+  {
+    double raw = (world_coord + grid_size * 0.5 * GRID_RESOLUTION) / GRID_RESOLUTION;
+    int idx = static_cast<int>(std::floor(raw + 0.5));
+
+    if (idx < 0)
+    {
+      return 0;
+    }
+    if (idx >= grid_size)
+    {
+      return grid_size - 1;
+    }
+    return idx;
+  }
+
+  /**
+   * @brief Convert a Pose (x,y) into a single linear index into occupancy_grid.
+   */
+  static int pose_to_index(const Pose& p)
+  {
+    int ix = world_coord_to_index(p.point(0), GRID_WIDTH);
+    int iy = world_coord_to_index(p.point(1), GRID_HEIGHT);
+    return iy * GRID_WIDTH + ix;
+  }
 };

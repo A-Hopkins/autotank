@@ -16,6 +16,10 @@
 
 #include "diff_drive.h"
 
+#ifdef UNIT_TESTING
+#include <gtest/gtest_prod.h>
+#endif
+
 /**
 * @class MotionControlTask
 * @brief A task that creates velocity commands for a differential drive system.
@@ -70,6 +74,16 @@ protected:
   }
 
 private:
+
+#ifdef UNIT_TESTING
+  FRIEND_TEST(MotionControlTaskTest, CalculateTwistCommand_NoLocalization);
+  FRIEND_TEST(MotionControlTaskTest, CalculateTwistCommand_Success);
+  FRIEND_TEST(MotionControlTaskTest, CalculateTwistCommand_SimpleForward);
+  FRIEND_TEST(MotionControlTaskTest, RotateInPlaceWhenMisaligned);
+  FRIEND_TEST(MotionControlTaskTest, ShortestAngleDirection_ClampsToMaxAngular);
+  FRIEND_TEST(MotionControlTaskTest, CalculateTwistCommand_AtGoalStops);
+#endif
+
   DiffDrive diff_drive;                           ///< The DiffDrive instance for handling differential drive operations.
   msg::LocalizationEstimateMsg current_loc_est{}; ///< Latest localization estimate
   msg::WaypointMsg current_waypoint{};            ///< Latest waypoint command

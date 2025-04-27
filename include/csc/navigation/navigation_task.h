@@ -15,6 +15,10 @@
 #include "msg/localization_estimate_msg.h"
 #include "csc/services/map_service/map_service.h"
 
+#ifdef UNIT_TESTING
+#include <gtest/gtest_prod.h>
+#endif
+
 /**
  * @class NavigationTask
  * @brief Implements navigation behavior based on internal mission states.
@@ -72,6 +76,14 @@ protected:
   }
 
 private:
+
+#ifdef UNIT_TESTING
+  FRIEND_TEST(NavigationTaskTest, HomePoseInitialization);
+  FRIEND_TEST(NavigationTaskTest, EvaluateBehavior_GoHome);
+  FRIEND_TEST(NavigationTaskTest, EvaluateBehavior_Explore);
+  FRIEND_TEST(NavigationTaskTest, ClearGoalResetsInternalState);
+#endif
+
   /**
    * @brief Represents a behavior
    */

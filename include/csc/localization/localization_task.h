@@ -19,6 +19,10 @@
 #include "msg/lidar_msg.h"
 #include "msg/localization_estimate_msg.h"
 
+#ifdef UNIT_TESTING
+#include <gtest/gtest_prod.h>
+#endif
+
 /**
  * @class LocalizationTask
  * @brief A task that handles localization operations for a robot.
@@ -117,6 +121,13 @@ protected:
   }
 
 private:
+
+#ifdef UNIT_TESTING
+  FRIEND_TEST(LocalizationTaskTest, IMUUpdateSetsCorrectPosterior);
+  FRIEND_TEST(LocalizationTaskTest, OdomUpdateSetsCorrectPosterior);
+  FRIEND_TEST(LocalizationTaskTest, SequentialFusionUpdatesState);
+#endif
+
   msg::LocalizationEstimateMsg current_state_est{};        ///< Current state of the localization task
   std::chrono::steady_clock::time_point last_time;         ///< Timestamp for prediction dt
 

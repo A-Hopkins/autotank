@@ -91,10 +91,29 @@ void SafetyMonitorTask::handle_lidar_data(const msg::LidarDataMsg *lidar_data)
 {
   if (!loc_initialized) return;
 
-  // forward speed and covariance margin
-  double speed    = std::max(0.0, loc_est.est_twist.twist.linear(0));
-  const auto& C  = loc_est.est_pose.covariance;
-  double sigma    = std::sqrt(C(0,0) + C(1,1));
+  auto possible_detection = detect_collision(lidar_data, loc_est);
+
+  if (possible_detection)
+  {
+    safe_publish(msg::Msg(this, *possible_detection));
+  }
+
+}
+
+void SafetyMonitorTask::handle_localization_data(const msg::LocalizationEstimateMsg* loc_est_data)
+{
+  if (!loc_est_data) return;
+
+  loc_est = *loc_est_data;
+  loc_initialized = true;
+}
+
+std::optional<msg::SafetyAlertMsg> SafetyMonitorTask::detect_collision(const msg::LidarDataMsg *lidar_data, const msg::LocalizationEstimateMsg& loc_est)
+{
+
+  double speed = std::max(0.0, loc_est.est_twist.twist.linear(0));
+  const auto& C = loc_est.est_pose.covariance;
+  double sigma = std::sqrt(C(0,0) + C(1,1));
   constexpr double K = 2.0; // 2sigma margin
   constexpr double MARGIN = 0.1; // 10cm extra safety
   double collision_cutoff = lidar_data->range_min + MARGIN;
@@ -113,7 +132,15 @@ void SafetyMonitorTask::handle_lidar_data(const msg::LidarDataMsg *lidar_data)
     if (safe_r <= 0.0f || r <= collision_cutoff)
     {
       // compute time to collision (zero or negative means already in collision margin)
-      double ttc = (speed > 1e-3f) ? (safe_r / speed) : 0.0f;
+      double ttc = 0.0;
+      if (speed > 1e-3)
+      {
+        ttc = safe_r / speed;
+        if (ttc < 0.0)
+        {
+          ttc = 0.0;
+        }
+      }
 
       msg::SafetyAlertMsg stop;
       stop.level = msg::SafetyLevel::CRITICAL;
@@ -123,17 +150,9 @@ void SafetyMonitorTask::handle_lidar_data(const msg::LidarDataMsg *lidar_data)
       stop.ttc = ttc;
       stop.beam_index = i;
 
-      safe_publish(msg::Msg(this, stop));
-      return;  // early exit on first detected threat
+      return stop;
     }
   }
 
-}
-
-void SafetyMonitorTask::handle_localization_data(const msg::LocalizationEstimateMsg* loc_est_data)
-{
-  if (!loc_est_data) return;
-
-  loc_est = *loc_est_data;
-  loc_initialized = true;
+  return std::nullopt;
 }

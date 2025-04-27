@@ -13,6 +13,11 @@
 #include "msg/localization_estimate_msg.h"
 #include "msg/safety_alert_msg.h"
 
+#ifdef UNIT_TESTING
+#include <gtest/gtest_prod.h>
+#endif
+
+
 class SafetyMonitorTask : public task::Task
 {
 public:
@@ -57,6 +62,15 @@ protected:
   }
 
 private:
+
+#ifdef UNIT_TESTING
+  FRIEND_TEST(SafetyMonitorTaskTest, NoLocalization_NoAlert);
+  FRIEND_TEST(SafetyMonitorTaskTest, LocalizationOnly_NoAlert);
+  FRIEND_TEST(SafetyMonitorTaskTest, ClearScan_NoAlert);
+  FRIEND_TEST(SafetyMonitorTaskTest, CollisionAtCutoff_EmitsStop);
+  FRIEND_TEST(SafetyMonitorTaskTest, ZeroSpeed_ZeroTTC);
+#endif
+
   bool loc_initialized = false;           ///< Flag indicating whether an initial localization estimate has been received.
   msg::LocalizationEstimateMsg loc_est{}; ///< Stores the current best estimate of the robot's pose and velocity
 
@@ -79,4 +93,6 @@ private:
    * @param loc_est_data A pointer to the received LocalizationEstimateMsg.
    */
   void handle_localization_data(const msg::LocalizationEstimateMsg *loc_est_data);
+
+  std::optional<msg::SafetyAlertMsg> detect_collision(const msg::LidarDataMsg *lidar_data, const msg::LocalizationEstimateMsg& loc_est);
 };

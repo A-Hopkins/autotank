@@ -101,3 +101,6 @@ if(USE_SIM AND gz-transport14_FOUND)
   # Link Gazebo Transport
   target_link_libraries(autotank PRIVATE gz-transport${GZ_TRANSPORT_VER})
 endif()
+
+enable_testing()
+add_subdirectory(test)

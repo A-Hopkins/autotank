@@ -44,6 +44,16 @@ MapService::Path MapService::plan_path(const Pose& start, const Pose& goal)
       std::this_thread::yield();
     }
 
+    int start_idx = pose_to_index(start);
+    int goal_idx  = pose_to_index(goal);
+
+    // if either start or goal cell is occupied, bail out:
+    if (occupancy_grid[start_idx] == CellStatus::OCCUPIED ||
+        occupancy_grid[goal_idx]  == CellStatus::OCCUPIED)
+    {
+      return Path{path_pool};  // empty
+    }
+
     // Run pathing algorithm
     result = run_a_star(start, goal);
 
@@ -59,8 +69,8 @@ void MapService::insert_scan(const msg::LidarDataMsg& scan, const Pose& pose)
   // Convert robot world pose to grid indices
   double rx_world = pose.point(0);
   double ry_world = pose.point(1);
-  int rx = static_cast<int>((rx_world + GRID_WIDTH * 0.5 * GRID_RESOLUTION) / GRID_RESOLUTION);
-  int ry = static_cast<int>((ry_world + GRID_HEIGHT * 0.5 * GRID_RESOLUTION) / GRID_RESOLUTION);
+  int rx = world_coord_to_index(rx_world, GRID_WIDTH);
+  int ry = world_coord_to_index(ry_world, GRID_HEIGHT);
 
   // get yaw from quaternion
   auto& q = pose.orientation;
@@ -85,8 +95,8 @@ void MapService::insert_scan(const msg::LidarDataMsg& scan, const Pose& pose)
     double wy = ry_world + r * std::sin(yaw + angle);
 
     // Endpoint grid indices
-    int gx = static_cast<int>((wx + GRID_WIDTH * 0.5f * GRID_RESOLUTION) / GRID_RESOLUTION);
-    int gy = static_cast<int>((wy + GRID_HEIGHT * 0.5f * GRID_RESOLUTION) / GRID_RESOLUTION);
+    int gx = world_coord_to_index(wx, GRID_WIDTH);
+    int gy = world_coord_to_index(wy, GRID_HEIGHT);
 
     // --- Bresenham line algorithm variables ---
     // (x0, y0): current grid cell, initialized to robot's cell
@@ -142,16 +152,8 @@ MapService::Path MapService::run_a_star(const Pose& start, const Pose& goal)
 {
   Path path{path_pool};
 
-  // Convert start/goal to grid cells
-  auto to_index = [&](const Pose& pose)
-  {
-    int gx = int((pose.point(0) + GRID_WIDTH * 0.5f * GRID_RESOLUTION) / GRID_RESOLUTION);
-    int gy = int((pose.point(1) + GRID_HEIGHT * 0.5f * GRID_RESOLUTION) / GRID_RESOLUTION);
-    return gy * GRID_WIDTH + gx;
-  };
-
-  int start_idx = to_index(start);
-  int goal_idx = to_index(goal);
+  int start_idx = pose_to_index(start);
+  int goal_idx  = pose_to_index(goal);
 
   // Boundary check and occupancy
   if (start_idx < 0 || start_idx >= GRID_WIDTH * GRID_HEIGHT ||

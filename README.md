@@ -13,47 +13,39 @@ Autotank is a C++ project demonstrating the development of an autonomous mobile 
         - `IMUTask`: Handles Inertial Measurement Unit data.
         - `OdomTask`: Processes wheel odometry data.
         - `LidarTask`: Manages 2D Lidar scans.
-    - **`LocalizationTask`**: Fuses sensor data (IMU, Odometry, Lidar) and command velocity inputs to estimate the robot's pose (position and orientation) and twist (linear and angular velocity). Publishes `LocalizationEstimateMsg`. (Utilizes `kfplusplus` for potential filter implementations).
-    - **`MotionControlTask`**: Receives localization estimates and target waypoints (future), calculates safe and appropriate velocity commands (`CmdVelMsg`), and sends them to the differential drive interface.
+    - **`LocalizationTask`**: Fuses sensor data (IMU, Odometry) and command velocity inputs to estimate the robot's pose (position and orientation) and twist (linear and angular velocity). Publishes `LocalizationEstimateMsg`. (Utilizes `kfplusplus` for its Extended Kalman Filter implementation).
+    - **`MotionControlTask`**: Receives localization estimates and target waypoints, calculates safe and appropriate velocity commands (`CmdVelMsg`), and sends them to the differential drive interface.
+    - **`NavigationTask`**: Responsible for path planning, obstacle avoidance, and waypoint following based on the localization estimate and map data.
+    - **`MappingTask`**: Builds and maintain a representation of the environment, with online mapping with a occupancy grid and Bresenham line algorithm for free spaces
+    - **`SafetyMonitorTask`**: checks LiDAR and velocity for iminent collisions and will safety alerts to the `MotionControlTask`
+    - **`MapService`**: Provides a global, heap-free mapping and planning utility shared across tasks. It maintains a fixed-size occupancy grid updated via `update_map()` using Bresenham’s line algorithm. Path planning is performed with `plan_path()` (A* search), and `find_frontiers()` identifies candidate exploration targets. Internally, it uses a **sequence lock** to allow one writer (e.g., `MappingTask`) and multiple lock-free readers (e.g., `NavigationTask`) to safely access the map concurrently with real-time guarantees.
 - **Message Definitions**: Custom message types (`msg/*.h`) define the data structures for inter-task communication (e.g., `IMUDataMsg`, `OdomDataMsg`, `LidarDataMsg`, `CmdVelMsg`, `LocalizationEstimateMsg`).
 - **Extensible Design**: Easily add new sensor tasks, control algorithms, or higher-level capabilities like navigation and mapping.
-- **Planned Features**:
-    - **`NavigationTask`**: Will be responsible for path planning, obstacle avoidance, and waypoint following based on the localization estimate and map data.
-    - **`MappingTask`**: Will build and maintain a representation of the environment, potentially performing the mapping part of SLAM (Simultaneous Localization and Mapping), while localization handles the 'SL' part.
 
 ---
 
 ## File Structure
 
-- **`src/`**: Source code for the application.
-    - **`csc/`**: Computer Software Components (Core application logic).
-        - `control/`: Control-related tasks.
-            - `motion_control/`: Differential drive motion control (`MotionControlTask`, `DiffDrive` interface).
-        - `localization/`: State estimation (`LocalizationTask`).
-        - `sensors/`: Sensor processing tasks (`IMUTask`, `OdomTask`, `LidarTask`) and their interfaces (`imu.h`, `odom.h`, `lidar.h`).
-        - `navigation/` (Future): Navigation logic.
-        - `mapping/` (Future): Mapping logic.
-    - **`hal/`**: Hardware Abstraction Layer implementations.
-        - `gazebo/`: Implementations for Gazebo simulation (`gazebo_imu.cpp`, `gazebo_odom.cpp`, `gazebo_lidar.cpp`, `gazebo_diff_drive.cpp`, `gazebo_helpers.h`).
-        - `hardware/` (Future): Implementations for specific hardware drivers.
-    - **`main.cpp`**: Application entry point, task initialization, and `protocore` setup.
-- **`include/`**: Header files.
-    - **`csc/`**: Headers for Computer Software Components.
-    - **`hal/`**: Headers for Hardware Abstraction Layer interfaces (defined within `csc/` subdirs like `sensors/imu/imu.h`).
-    - **`msg/`**: Message definitions.
-        - `common_types/`: Reusable data structures (e.g., `Header`, `Pose`, `Twist`).
-        - `msg_variant_types.h`: Project-specific variant definition overriding `protocore`'s default.
-        - Individual message headers (e.g., `imu_msg.h`, `odom_msg.h`).
-- **`external/`**: Contains dependencies linked via CMake (e.g., `protocore`, `kfplusplus`). Managed via symlinks or Git submodules.
-- **`gazebo/`**: Gazebo simulation files.
-    - `world/`: SDF world files (`autotank_world.sdf`).
-    - `models/` (Optional): Custom Gazebo models.
-- **`CMakeLists.txt`**: Build configuration script.
-- **`.vscode/`**: VS Code specific settings (launch, tasks).
-- **`README.md`**: This file.
-- **`LICENSE`**: Project license.
-
+```plaintext
+src/
+├── csc/
+│   ├── control/motion_control/          # MotionControlTask, DiffDrive
+│   ├── localization/                    # EKF-based state estimation
+│   ├── mapping/                         # Lidar-based mapping
+│   ├── navigation/                      # Behavior planner + waypoint generator
+│   ├── safety_monitor/                  # Emergency stop logic
+│   └── services/map_service/            # A*, occupancy grid
+│
+│   └── sensors/
+│       ├── imu/imu_task.cpp             # IMU interface
+│       ├── odom/odom_task.cpp           # Odometry interface
+│       └── lidar/lidar_task.cpp         # 2D LiDAR interface
+│
+├── hal/
+│   └── gazebo/                          # Simulation drivers (imu, odom, lidar, drive)
+└── main.cpp                             # Entry point and task setup
 ---
+```
 
 ## Architecture Overview
 
@@ -62,27 +54,86 @@ Autotank utilizes the task-based architecture provided by `protocore`. Each sign
 - **Communication**: Tasks communicate asynchronously by publishing and subscribing to specific message types via the `protocore` `Broker`. Message queuing and thread management are handled by the `protocore::Task` base class and `MessageQueue`.
 - **State Management**: The `protocore::StateManager` orchestrates the lifecycle of all registered tasks (e.g., `INITIALIZING`, `RUNNING`, `STOPPED`), ensuring synchronized state transitions across the system.
 - **Data Flow**:
-    1.  **Sensor Tasks** (`IMUTask`, `OdomTask`, `LidarTask`) interface with the HAL (Gazebo or hardware) to acquire raw sensor data. They process this data and publish it as specific message types (e.g., `IMUDataMsg`, `OdomDataMsg`, `LidarDataMsg`).
-    2.  **`LocalizationTask`** subscribes to sensor messages and potentially `CmdVelMsg` (for motion prediction). It fuses this information using an estimation filter (e.g., EKF via `kfplusplus`) to produce a `LocalizationEstimateMsg` containing the robot's estimated pose and twist.
-    3.  **(Future) `NavigationTask`** subscribes to `LocalizationEstimateMsg` and map data (from `MappingTask`). It determines the desired path and intermediate waypoints, potentially publishing navigation goals.
-    4.  **`MotionControlTask`** subscribes to `LocalizationEstimateMsg` (and navigation goals from `NavigationTask` in the future). It calculates the necessary linear and angular velocities to follow the path or reach the goal, considering safety constraints. It publishes these as a `CmdVelMsg`.
-    5.  The **`DiffDrive` HAL implementation** (e.g., `gazebo_diff_drive`) receives the `CmdVelMsg` and translates it into commands for the simulation or hardware actuators.
-    6.  **(Future) `MappingTask`** subscribes to sensor data (e.g., `LidarDataMsg`) and `LocalizationEstimateMsg` to build and update the map.
+    1. **Sensor Tasks** (`IMUTask`, `OdomTask`, `LidarTask`) retrieve raw sensor data via the HAL (either Gazebo simulation or hardware). Each task processes its input and publishes a standardized message:
+    - `IMUDataMsg` from `IMUTask`
+    - `OdomDataMsg` from `OdomTask`
+    - `LidarDataMsg` from `LidarTask`
+
+    2. **`LocalizationTask`** subscribes to all relevant sensor messages and `CmdVelMsg` to support motion prediction. It runs an Extended Kalman Filter (EKF) using `kfplusplus`, producing a fused estimate of the robot’s state. This estimate is published as a `LocalizationEstimateMsg`.
+
+    3. **`MappingTask`** listens for `LidarDataMsg` and `LocalizationEstimateMsg`. Once a valid pose estimate is available, it **directly calls** the global `MapService` to integrate the LiDAR scan. The `MapService`:
+        - Performs ray-tracing from the robot's pose to mark free and occupied cells in a fixed-size occupancy grid.
+        - Uses a **sequence lock (seqlock)** to enable safe concurrent access: one writer (`MappingTask`) and multiple lock-free readers (e.g., `NavigationTask`).
+        - Operates entirely without heap allocations to meet real-time constraints.
+
+    4. **`NavigationTask`** consumes the localization estimate and interfaces with the `MapService` to:
+    - Evaluate current behavior mode (e.g., `GO_HOME`, `EXPLORE`).
+    - Plan a path using A* via `MapService::plan_path()`.
+    - In `EXPLORE` mode, call `MapService::find_frontiers()` to detect free-unknown boundaries and choose reachable goals.
+    - Generate a waypoint path (`MapService::Path`) and publish waypoints as `WaypointMsg`.
+
+    5. **`MotionControlTask`** subscribes to `LocalizationEstimateMsg` and `WaypointMsg`. It calculates a safe velocity command using a simple feedback controller:
+    - Rotates in place to align with the target.
+    - Drives forward with yaw correction.
+    - Publishes the resulting `CmdVelMsg`.
+    It also listens for `SafetyAlertMsg` and overrides movement commands with zero velocity if a collision is imminent.
+
+    6. The **`DiffDrive` HAL** (e.g., `gazebo_diff_drive`) receives `CmdVelMsg` and translates the motion command into simulator-specific or hardware-specific actuation.
 
 ```
-+--------------+       +--------------+       +--------------+       +-----------------+       +-------------+
-| Sensor Tasks | ----> | Localization | ----> | Navigation   | ----> | Motion Control  | ----> | Diff Drive  |
-| (IMU, Odom,  |       | Task         |       | Task (Future)|       | Task            |       | (HAL)       |
-| Lidar)       |       +--------------+       +--------------+       +-----------------+       +-------------+
-+--------------+              |                      |                        ^
-       |                      |                      |                        |
-       |                      v                      v                        |
-       |                +--------------+       +--------------+               |
-       +--------------->| Mapping Task |<----->| Navigation   |---------------+
-                        | (Future)     |       | Task (Future)|
-                        +--------------+       +--------------+
++----------------+        +------------------+       +-------------------+
+|  Sensor Tasks  | -----> |  Localization    | ----> |  Motion Control   |
+| (IMU, Odom,    |        |  (EKF Fusion)    |       |  (DiffDrive Cmds) |
+|  Lidar)        |        +------------------+       +-------------------+
+|                |                      |                      ^
+|                |                      v                      |
+|                |            +------------------+             |
+|                +----------> |    Mapping Task  | <--------- -+
+|                             | (Occupancy Grid) |             |
+|                             +------------------+             |
+|                                     ^                        |
+|                                     |                        |
+|                          +---------------------+             |
+|                          |   Navigation Task   | ------------+
+|                          |  (Plan + Behavior)  |
+|                          +---------------------+
 ```
 
+```
+                      +----------------------------+
+                      │        MapService          │
+                      │  Global Occupancy Grid     │
+                      │  - update_map(scan, pose)  │<──┐
+                      │  - plan_path(start, goal)  │   │
+                      │  - find_frontiers(pose)    │   │
+                      │  - uses sequence lock      │   │
+                      +----------------------------+   │
+                               ^    ^    ^             │
+                               │    │    │             │
+       +--------------------+  │    │    │             │
+       │   MappingTask      │──┘    │    │    +--------------------+
+       │                    │       │    └────>   NavigationTask   │
+       │ - Subscribes to    │       │         │                    │
+       │   Lidar + Pose     │       └─────────┤ - Calls:           │
+       │ - Calls update_map │                 │   plan_path()      │
+       +--------------------+                 │   find_frontiers() │
+                                              +--------------------+
+
+                     [Seqlock Behavior Summary]
+              +----------------------------------------+
+              │ Writers (e.g., update_map):            │
+              │   seq += 1  (odd)                      │
+              │   modify grid                          │
+              │   seq += 1  (even)                     │
+              │                                        │
+              │ Readers (e.g., plan_path):             │
+              │   do {                                 │
+              │     before = seq.load()                │
+              │     ... read grid ...                  │
+              │     after = seq.load()                 │
+              │   } while (before != after)            │
+              +----------------------------------------+
+```
 ---
 
 ## Gazebo Simulation Setup

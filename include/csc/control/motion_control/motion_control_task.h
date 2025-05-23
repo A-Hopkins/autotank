@@ -1,6 +1,7 @@
 /**
  * @file motion_control_task.h
- * @brief Defines the MotionControlTask class, responsible for handling differential drive operations
+ * @brief Defines the MotionControlTask class, responsible for handling differential drive
+ * operations
  *
  * The MotionControlTask class extends BaseTask and integrates with a DiffDrive instance to manage
  * differential drive operations. It provides functionality to handle a known localization of the
@@ -8,30 +9,28 @@
  */
 
 #pragma once
-#include "protocore/include/task.h"
+#include "diff_drive.h"
 #include "msg/cmdvel_msg.h"
 #include "msg/localization_estimate_msg.h"
 #include "msg/safety_alert_msg.h"
 #include "msg/waypoint_msg.h"
-
-#include "diff_drive.h"
+#include "protocore/include/task.h"
 
 #ifdef UNIT_TESTING
 #include <gtest/gtest_prod.h>
 #endif
 
 /**
-* @class MotionControlTask
-* @brief A task that creates velocity commands for a differential drive system.
-*
-* The MotionControlTask class is responsible for:
-* - Given a localization of the device and a desired waypoint, creating a safe twist command
-* - Sending that command to the diffdrive
-*/
+ * @class MotionControlTask
+ * @brief A task that creates velocity commands for a differential drive system.
+ *
+ * The MotionControlTask class is responsible for:
+ * - Given a localization of the device and a desired waypoint, creating a safe twist command
+ * - Sending that command to the diffdrive
+ */
 class MotionControlTask : public task::Task
 {
 public:
-
   static std::shared_ptr<MotionControlTask> create()
   {
     auto instance = std::shared_ptr<MotionControlTask>(new MotionControlTask("MotionControlTask"));
@@ -48,7 +47,7 @@ protected:
   /**
    * @brief Constructs an MotionControlTask instance
    */
-  MotionControlTask(const std::string& name = "MotionControlTask") : task::Task(name) { }
+  MotionControlTask(const std::string& name = "MotionControlTask") : task::Task(name) {}
 
   /**
    * @brief Processes incoming messages.
@@ -64,7 +63,6 @@ protected:
    */
   void transition_to_state(task::TaskState new_state) override;
 
-
   void on_initialize() override
   {
     safe_subscribe(msg::Type::StateMsg);
@@ -74,7 +72,6 @@ protected:
   }
 
 private:
-
 #ifdef UNIT_TESTING
   FRIEND_TEST(MotionControlTaskTest, CalculateTwistCommand_NoLocalization);
   FRIEND_TEST(MotionControlTaskTest, CalculateTwistCommand_Success);
@@ -84,10 +81,10 @@ private:
   FRIEND_TEST(MotionControlTaskTest, CalculateTwistCommand_AtGoalStops);
 #endif
 
-  DiffDrive diff_drive;                           ///< The DiffDrive instance for handling differential drive operations.
-  msg::LocalizationEstimateMsg current_loc_est{}; ///< Latest localization estimate
-  msg::WaypointMsg current_waypoint{};            ///< Latest waypoint command
-  msg::CmdVelMsg last_cmd_vel_msg{};              ///< Last command velocity sent to the diffdrive
+  DiffDrive diff_drive; ///< The DiffDrive instance for handling differential drive operations.
+  msg::LocalizationEstimateMsg current_loc_est{};  ///< Latest localization estimate
+  msg::WaypointMsg             current_waypoint{}; ///< Latest waypoint command
+  msg::CmdVelMsg               last_cmd_vel_msg{}; ///< Last command velocity sent to the diffdrive
 
   bool loc_est_valid{false};       ///< True if a localization estimate has been received
   bool safety_alert_active{false}; ///< True if a safety alert is active
@@ -117,4 +114,3 @@ private:
    */
   msg::CmdVelMsg calculate_twist_command();
 };
-

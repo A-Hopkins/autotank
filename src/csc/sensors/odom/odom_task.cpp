@@ -7,10 +7,9 @@
  * transitions, and publishing odometry data.
  */
 
-#include <iostream>
-
 #include "csc/sensors/odom/odom_task.h"
 #include "csc/sensors/odom/odom.h"
+#include <iostream>
 
 /**
  * @brief Destructor for the OdomTask.
@@ -32,8 +31,7 @@ OdomTask::~OdomTask()
  */
 void OdomTask::process_message(const msg::Msg& msg)
 {
-
-  switch(msg.get_type())
+  switch (msg.get_type())
   {
     case msg::Type::StateMsg:
     {
@@ -47,7 +45,9 @@ void OdomTask::process_message(const msg::Msg& msg)
     }
     default:
     {
-      std::cout << get_name() << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type()) << std::endl;
+      std::cout << get_name()
+                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
+                << std::endl;
       break;
     }
   }
@@ -82,7 +82,7 @@ void OdomTask::transition_to_state(task::TaskState new_state)
       odom_sensor.start([this](const msg::OdomDataMsg& data) { process_odom_data(data); });
       break;
     }
-      
+
     case task::TaskState::STOPPED:
     {
       odom_sensor.stop();
@@ -95,7 +95,8 @@ void OdomTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state) << std::endl;
+      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
+                << std::endl;
       break;
     }
   }

@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include "msg/declare_msg.h"
 #include "common_types/header.h"
 #include "common_types/twist.h"
+#include "msg/declare_msg.h"
 
 namespace msg
 {
@@ -26,4 +26,4 @@ namespace msg
      */
     Twist twist;
   };
-}
+} // namespace msg

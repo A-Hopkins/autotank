@@ -1,19 +1,17 @@
 /**
  * @file navigation_task.h
  * @brief Defines the navigation task that implements the behavior for navigating the world
- * 
+ *
  * This class uses state estimation and internal behavior states to generate waypoints
  * to accomplish high-level goals such as returning home or exploring the environment.
  *
  */
 
 #pragma once
-#include <optional>
-
-#include "protocore/include/task.h"
-
-#include "msg/localization_estimate_msg.h"
 #include "csc/services/map_service/map_service.h"
+#include "msg/localization_estimate_msg.h"
+#include "protocore/include/task.h"
+#include <optional>
 
 #ifdef UNIT_TESTING
 #include <gtest/gtest_prod.h>
@@ -30,7 +28,6 @@
 class NavigationTask : public task::Task
 {
 public:
-
   static std::shared_ptr<NavigationTask> create()
   {
     auto instance = std::shared_ptr<NavigationTask>(new NavigationTask("NavigationTask"));
@@ -39,30 +36,29 @@ public:
   }
 
   /**
-  * @brief Destructor for NavigationTask, ensuring proper resource cleanup.
-  */
+   * @brief Destructor for NavigationTask, ensuring proper resource cleanup.
+   */
   ~NavigationTask() = default;
 
 protected:
   /**
-  * @brief Constructs an NavigationTask instance
-  */
-  NavigationTask(const std::string& name = "NavigationTask") : task::Task(name) { }
+   * @brief Constructs an NavigationTask instance
+   */
+  NavigationTask(const std::string& name = "NavigationTask") : task::Task(name) {}
 
   /**
-  * @brief Processes incoming messages.
-  * @param msg The message to process.
-  */
+   * @brief Processes incoming messages.
+   * @param msg The message to process.
+   */
   void process_message(const msg::Msg& msg) override;
 
   /**
-  * @brief Transitions the task to a new state.
-  *
-  * Manages the internal state of the motion control task.
-  * @param new_state The target state for the task.
-  */
+   * @brief Transitions the task to a new state.
+   *
+   * Manages the internal state of the motion control task.
+   * @param new_state The target state for the task.
+   */
   void transition_to_state(task::TaskState new_state) override;
-
 
   /**
    * @brief Performs initialization steps for the NavigationTask.
@@ -76,7 +72,6 @@ protected:
   }
 
 private:
-
 #ifdef UNIT_TESTING
   FRIEND_TEST(NavigationTaskTest, HomePoseInitialization);
   FRIEND_TEST(NavigationTaskTest, EvaluateBehavior_GoHome);
@@ -89,9 +84,9 @@ private:
    */
   enum class BehaviorMode
   {
-    GO_HOME,   ///< Return to initial pose
-    EXPLORE,   ///< Explore unknown/free areas
-    NONE       ///< No active behavior
+    GO_HOME, ///< Return to initial pose
+    EXPLORE, ///< Explore unknown/free areas
+    NONE     ///< No active behavior
   };
 
   /**
@@ -99,19 +94,19 @@ private:
    */
   struct MissionGoal
   {
-    Pose target_pose; ///< The pose we are trying to reach
-    BehaviorMode mode; ///< What behavior generated this goal
+    Pose         target_pose; ///< The pose we are trying to reach
+    BehaviorMode mode;        ///< What behavior generated this goal
   };
 
   msg::LocalizationEstimateMsg current_loc_est{};          ///< Latest localization estimate
-  Pose home_pose{};                                        ///< Pose where the robot started
-  bool home_pose_initialized{false};                       ///< True if home pose has been captured
-  BehaviorMode current_behavior{BehaviorMode::NONE};       ///< Current behavior mode
-  std::optional<MissionGoal> active_goal{};                ///< Current active mission goal
-  std::optional<MapService::Path> planned_path;            ///< Planned sequence of waypoints
+  Pose                         home_pose{};                ///< Pose where the robot started
+  bool                       home_pose_initialized{false}; ///< True if home pose has been captured
+  BehaviorMode               current_behavior{BehaviorMode::NONE}; ///< Current behavior mode
+  std::optional<MissionGoal> active_goal{};                        ///< Current active mission goal
+  std::optional<MapService::Path>           planned_path;  ///< Planned sequence of waypoints
   std::optional<MapService::Path::Iterator> path_iterator; ///< Current waypoint to follow
-  bool path_valid{false};                                  ///< Indicates if a path is valid and active
-  static constexpr double POSITION_TOLERANCE = 0.2;        ///< position tolerance meters
+  bool                    path_valid{false};        ///< Indicates if a path is valid and active
+  static constexpr double POSITION_TOLERANCE = 0.2; ///< position tolerance meters
 
   /**
    * @brief Handle incoming localization estimate updates.

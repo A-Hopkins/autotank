@@ -7,14 +7,13 @@
  * format.
  */
 
-#include <iostream>
-#include <string>
+#include "csc/sensors/imu/imu.h"
+#include "gazebo_helpers.h"
+#include "msg/imu_msg.h"
 #include <gz/msgs.hh>
 #include <gz/transport.hh>
-
-#include "csc/sensors/imu/imu.h"
-#include "msg/imu_msg.h"
-#include "gazebo_helpers.h"
+#include <iostream>
+#include <string>
 
 /** @brief Gazebo transport node for communication. */
 static gz::transport::Node node;
@@ -28,7 +27,7 @@ static bool running = false;
  *
  * Initializes the Gazebo IMU interface.
  */
-IMU::IMU() { }
+IMU::IMU() {}
 
 /**
  * @brief Starts the IMU data subscription and processing.
@@ -42,77 +41,75 @@ IMU::IMU() { }
 void IMU::start(std::function<void(const msg::IMUDataMsg&)> callback)
 {
   imu_callback = callback;
-  running = true;
+  running      = true;
 
   // Subscribe to the Gazebo IMU topic
-  node.Subscribe<gz::msgs::IMU>("/imu", [this](const gz::msgs::IMU &msg)
-  {
-    // Ignore messages if not running
-    if (!running) return;
+  node.Subscribe<gz::msgs::IMU>(
+      "/imu",
+      [this](const gz::msgs::IMU& msg)
+      {
+        // Ignore messages if not running
+        if (!running)
+          return;
 
-    // Extract header information using the helper function
-    msg::Header extracted_header = gazebo_helper::extract_header(msg);
+        // Extract header information using the helper function
+        msg::Header extracted_header = gazebo_helper::extract_header(msg);
 
-    // Check to see if the sim time conversion needs to be done
-    if (!gazebo_helper::g_t0_wall_set && !gazebo_helper::g_t0_sim_set)
-    {
-      gazebo_helper::g_t0_wall = std::chrono::steady_clock::now();
-      gazebo_helper::g_t0_sim_sec = msg.header().stamp().sec();
-      gazebo_helper::g_t0_sim_nsec = msg.header().stamp().nsec();
-      gazebo_helper::g_t0_wall_set = true;
-      gazebo_helper::g_t0_sim_set = true;
-    }
+        // Check to see if the sim time conversion needs to be done
+        if (!gazebo_helper::g_t0_wall_set && !gazebo_helper::g_t0_sim_set)
+        {
+          gazebo_helper::g_t0_wall     = std::chrono::steady_clock::now();
+          gazebo_helper::g_t0_sim_sec  = msg.header().stamp().sec();
+          gazebo_helper::g_t0_sim_nsec = msg.header().stamp().nsec();
+          gazebo_helper::g_t0_wall_set = true;
+          gazebo_helper::g_t0_sim_set  = true;
+        }
 
-    // Convert Gazebo time to wall time
-    msg::Timestamp t = gazebo_helper::sim_to_walltime(msg.header().stamp().sec(), msg.header().stamp().nsec());
+        // Convert Gazebo time to wall time
+        msg::Timestamp t =
+            gazebo_helper::sim_to_walltime(msg.header().stamp().sec(), msg.header().stamp().nsec());
 
-    // Convert Gazebo IMU message to internal IMUDataMsg format
-    msg::IMUDataMsg imu_data = {
-      .header = {
-        .seq = extracted_header.seq,
-        .stamp = {
-          .sec = t.sec,
-          .nsec = t.nsec
-        },
-        .frame_id = extracted_header.frame_id
-      },
-      .orientation = {
-        msg.orientation().x(),
-        msg.orientation().y(),
-        msg.orientation().z(),
-        msg.orientation().w()
-      },
-      .orientation_covariance = {
-        { msg.orientation_covariance().data()[0], msg.orientation_covariance().data()[1], msg.orientation_covariance().data()[2] },
-        { msg.orientation_covariance().data()[3], msg.orientation_covariance().data()[4], msg.orientation_covariance().data()[5] },
-        { msg.orientation_covariance().data()[6], msg.orientation_covariance().data()[7], msg.orientation_covariance().data()[8] }
-      },
-      .angular_velocity = {
-        msg.angular_velocity().x(),
-        msg.angular_velocity().y(),
-        msg.angular_velocity().z()
-      },
-      .angular_velocity_covariance = {
-        { msg.angular_velocity_covariance().data()[0], msg.angular_velocity_covariance().data()[1], msg.angular_velocity_covariance().data()[2] },
-        { msg.angular_velocity_covariance().data()[3], msg.angular_velocity_covariance().data()[4], msg.angular_velocity_covariance().data()[5] },
-        { msg.angular_velocity_covariance().data()[6], msg.angular_velocity_covariance().data()[7], msg.angular_velocity_covariance().data()[8] }
-      },
-      .linear_acceleration = {
-        msg.linear_acceleration().x(),
-        msg.linear_acceleration().y(),
-        msg.linear_acceleration().z()
-      },
-      .linear_acceleration_covariance = {
-        { msg.linear_acceleration_covariance().data()[0], msg.linear_acceleration_covariance().data()[1], msg.linear_acceleration_covariance().data()[2] },
-        { msg.linear_acceleration_covariance().data()[3], msg.linear_acceleration_covariance().data()[4], msg.linear_acceleration_covariance().data()[5] },
-        { msg.linear_acceleration_covariance().data()[6], msg.linear_acceleration_covariance().data()[7], msg.linear_acceleration_covariance().data()[8] }
-      }
-    };
+        // Convert Gazebo IMU message to internal IMUDataMsg format
+        msg::IMUDataMsg imu_data = {
+            .header      = {.seq      = extracted_header.seq,
+                            .stamp    = {.sec = t.sec, .nsec = t.nsec},
+                            .frame_id = extracted_header.frame_id},
+            .orientation = {msg.orientation().x(), msg.orientation().y(), msg.orientation().z(),
+                            msg.orientation().w()},
+            .orientation_covariance =
+                {{msg.orientation_covariance().data()[0], msg.orientation_covariance().data()[1],
+                  msg.orientation_covariance().data()[2]},
+                 {msg.orientation_covariance().data()[3], msg.orientation_covariance().data()[4],
+                  msg.orientation_covariance().data()[5]},
+                 {msg.orientation_covariance().data()[6], msg.orientation_covariance().data()[7],
+                  msg.orientation_covariance().data()[8]}},
+            .angular_velocity            = {msg.angular_velocity().x(), msg.angular_velocity().y(),
+                                            msg.angular_velocity().z()},
+            .angular_velocity_covariance = {{msg.angular_velocity_covariance().data()[0],
+                                             msg.angular_velocity_covariance().data()[1],
+                                             msg.angular_velocity_covariance().data()[2]},
+                                            {msg.angular_velocity_covariance().data()[3],
+                                             msg.angular_velocity_covariance().data()[4],
+                                             msg.angular_velocity_covariance().data()[5]},
+                                            {msg.angular_velocity_covariance().data()[6],
+                                             msg.angular_velocity_covariance().data()[7],
+                                             msg.angular_velocity_covariance().data()[8]}},
+            .linear_acceleration = {msg.linear_acceleration().x(), msg.linear_acceleration().y(),
+                                    msg.linear_acceleration().z()},
+            .linear_acceleration_covariance = {{msg.linear_acceleration_covariance().data()[0],
+                                                msg.linear_acceleration_covariance().data()[1],
+                                                msg.linear_acceleration_covariance().data()[2]},
+                                               {msg.linear_acceleration_covariance().data()[3],
+                                                msg.linear_acceleration_covariance().data()[4],
+                                                msg.linear_acceleration_covariance().data()[5]},
+                                               {msg.linear_acceleration_covariance().data()[6],
+                                                msg.linear_acceleration_covariance().data()[7],
+                                                msg.linear_acceleration_covariance().data()[8]}}};
 
-    // Invoke the callback if it's set
-    if (imu_callback)
-      imu_callback(imu_data);
-  });
+        // Invoke the callback if it's set
+        if (imu_callback)
+          imu_callback(imu_data);
+      });
 }
 
 /**

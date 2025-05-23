@@ -7,15 +7,14 @@
  * and translates them into the internal LidarDataMsg format.
  */
 
-#include <iostream>
-#include <string>
-#include <limits> // Add include for std::numeric_limits
+#include "csc/sensors/lidar/lidar.h"
+#include "gazebo_helpers.h"
+#include "msg/lidar_msg.h"
 #include <gz/msgs.hh>
 #include <gz/transport.hh>
-
-#include "csc/sensors/lidar/lidar.h"
-#include "msg/lidar_msg.h"
-#include "gazebo_helpers.h"
+#include <iostream>
+#include <limits> // Add include for std::numeric_limits
+#include <string>
 
 /** @brief Gazebo Transport node for communication. */
 static gz::transport::Node node;
@@ -27,7 +26,7 @@ static bool running = false;
 /**
  * @brief Default constructor for the Lidar class.
  */
-Lidar::Lidar() { }
+Lidar::Lidar() {}
 
 /**
  * @brief Populates the ranges array in LidarDataMsg from a Gazebo LaserScan message.
@@ -101,53 +100,52 @@ static void populate_intensities(const gz::msgs::LaserScan& msg, msg::LidarDataM
 void Lidar::start(std::function<void(const msg::LidarDataMsg&)> callback)
 {
   lidar_callback = callback;
-  running = true;
+  running        = true;
 
-  node.Subscribe<gz::msgs::LaserScan>("/lidar", [this](const gz::msgs::LaserScan &msg)
-  {
-    if (!running) return;
+  node.Subscribe<gz::msgs::LaserScan>(
+      "/lidar",
+      [this](const gz::msgs::LaserScan& msg)
+      {
+        if (!running)
+          return;
 
-    msg::Header extracted_header = gazebo_helper::extract_header(msg);
+        msg::Header extracted_header = gazebo_helper::extract_header(msg);
 
-    // Check to see if the sim time conversion needs to be done
-    if (!gazebo_helper::g_t0_wall_set && !gazebo_helper::g_t0_sim_set)
-    {
-      gazebo_helper::g_t0_wall = std::chrono::steady_clock::now();
-      gazebo_helper::g_t0_sim_sec = msg.header().stamp().sec();
-      gazebo_helper::g_t0_sim_nsec = msg.header().stamp().nsec();
-      gazebo_helper::g_t0_wall_set = true;
-      gazebo_helper::g_t0_sim_set = true;
-    }
+        // Check to see if the sim time conversion needs to be done
+        if (!gazebo_helper::g_t0_wall_set && !gazebo_helper::g_t0_sim_set)
+        {
+          gazebo_helper::g_t0_wall     = std::chrono::steady_clock::now();
+          gazebo_helper::g_t0_sim_sec  = msg.header().stamp().sec();
+          gazebo_helper::g_t0_sim_nsec = msg.header().stamp().nsec();
+          gazebo_helper::g_t0_wall_set = true;
+          gazebo_helper::g_t0_sim_set  = true;
+        }
 
-    // Convert Gazebo time to wall time
-    msg::Timestamp t = gazebo_helper::sim_to_walltime(msg.header().stamp().sec(), msg.header().stamp().nsec());
+        // Convert Gazebo time to wall time
+        msg::Timestamp t =
+            gazebo_helper::sim_to_walltime(msg.header().stamp().sec(), msg.header().stamp().nsec());
 
-    msg::LidarDataMsg lidar_data = {
-      .header = {
-        .seq = extracted_header.seq,
-        .stamp = {
-          .sec = t.sec,
-          .nsec = t.nsec
-        },
-        .frame_id = extracted_header.frame_id
-      },
-      .angle_min = msg.angle_min(),
-      .angle_max = msg.angle_max(),
-      .angle_increment = 0.0, // TODO: Populate from msg if available or calculate
-      .time_increment = 0.0,  // TODO: Populate from msg if available
-      .scan_time = 0.0,       // TODO: Populate from msg if available
-      .range_min = msg.range_min(),
-      .range_max = msg.range_max(),
-      // .ranges_count, .ranges and .intensities are initialized by helper functions
-    };
+        msg::LidarDataMsg lidar_data = {
+            .header          = {.seq      = extracted_header.seq,
+                                .stamp    = {.sec = t.sec, .nsec = t.nsec},
+                                .frame_id = extracted_header.frame_id},
+            .angle_min       = msg.angle_min(),
+            .angle_max       = msg.angle_max(),
+            .angle_increment = 0.0, // TODO: Populate from msg if available or calculate
+            .time_increment  = 0.0, // TODO: Populate from msg if available
+            .scan_time       = 0.0, // TODO: Populate from msg if available
+            .range_min       = msg.range_min(),
+            .range_max       = msg.range_max(),
+            // .ranges_count, .ranges and .intensities are initialized by helper functions
+        };
 
-    // Populate ranges and intensities using helper functions
-    populate_ranges(msg, lidar_data);
-    populate_intensities(msg, lidar_data);
+        // Populate ranges and intensities using helper functions
+        populate_ranges(msg, lidar_data);
+        populate_intensities(msg, lidar_data);
 
-    if (lidar_callback)
-      lidar_callback(lidar_data);
-  });
+        if (lidar_callback)
+          lidar_callback(lidar_data);
+      });
 }
 
 /**

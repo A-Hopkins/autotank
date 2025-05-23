@@ -1,11 +1,11 @@
 /**
  * @file header.h
  * @brief Standard metadata for data types
- * 
+ *
  */
 #pragma once
-#include <string>
 #include <cstdint>
+#include <string>
 
 namespace msg
 {
@@ -20,7 +20,7 @@ namespace msg
     /** @brief Nanoseconds component of the timestamp (since seconds). */
     uint32_t nsec;
   };
-  
+
   /**
    * @struct Header
    * @brief Standard metadata for messages, including sequence number, timestamp, and frame ID.
@@ -30,19 +30,19 @@ namespace msg
   {
     /** @brief Sequence ID: consecutively increasing identifier. */
     uint32_t seq;
-  
-    /** 
+
+    /**
      * @brief Timestamp associated with the data.
      *        Represents the time of data acquisition or generation.
      *        * stamp.sec: seconds (stamp_secs) since epoch
      *        * stamp.nsec: nanoseconds since stamp_secs
      */
     Timestamp stamp;
-  
-    /** 
+
+    /**
      * @brief Frame ID: the coordinate frame this data is associated with.
      *        Typically a string identifier like "odom", "base_link", etc.
      */
     std::string frame_id;
   };
-}
+} // namespace msg

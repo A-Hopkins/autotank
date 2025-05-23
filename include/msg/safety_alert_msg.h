@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include "msg/declare_msg.h"
 #include "common_types/pose.h"
+#include "msg/declare_msg.h"
 
 namespace msg
 {
@@ -34,11 +34,11 @@ namespace msg
 
   DECLARE_MESSAGE_TYPE(SafetyAlertMsg)
   {
-    SafetyLevel level;   ///< Severity of the hazard
-    SafetyAction action; ///< Recommended controller action
-    double dist;          ///< Distance to the closest obstacle [m]
-    double ttc;           ///< Time-to-collision estimate [ms], if available
-    Pose pose;           ///< Where the robot was when alert was generated
-    uint16_t beam_index;  ///< Which ray index triggered the alert
+    SafetyLevel  level;      ///< Severity of the hazard
+    SafetyAction action;     ///< Recommended controller action
+    double       dist;       ///< Distance to the closest obstacle [m]
+    double       ttc;        ///< Time-to-collision estimate [ms], if available
+    Pose         pose;       ///< Where the robot was when alert was generated
+    uint16_t     beam_index; ///< Which ray index triggered the alert
   };
-}
+} // namespace msg

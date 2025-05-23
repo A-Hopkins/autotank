@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include "protocore/include/task.h"
+#include "msg/common_types/pose.h"
 #include "msg/lidar_msg.h"
 #include "msg/localization_estimate_msg.h"
-#include "msg/common_types/pose.h"
+#include "protocore/include/task.h"
 
 #ifdef UNIT_TESTING
 #include <gtest/gtest_prod.h>
@@ -29,7 +29,6 @@
 class MappingTask : public task::Task
 {
 public:
-
   static std::shared_ptr<MappingTask> create()
   {
     auto instance = std::shared_ptr<MappingTask>(new MappingTask("MappingTask"));
@@ -38,30 +37,29 @@ public:
   }
 
   /**
-  * @brief Destructor for MappingTask, ensuring proper resource cleanup.
-  */
+   * @brief Destructor for MappingTask, ensuring proper resource cleanup.
+   */
   ~MappingTask();
 
 protected:
   /**
-  * @brief Constructs an MappingTask instance
-  */
-  MappingTask(const std::string& name = "MappingTask") : task::Task(name) { }
+   * @brief Constructs an MappingTask instance
+   */
+  MappingTask(const std::string& name = "MappingTask") : task::Task(name) {}
 
   /**
-  * @brief Processes incoming messages.
-  * @param msg The message to process.
-  */
+   * @brief Processes incoming messages.
+   * @param msg The message to process.
+   */
   void process_message(const msg::Msg& msg) override;
 
   /**
-  * @brief Transitions the task to a new state.
-  *
-  * Manages the internal state of the motion control task.
-  * @param new_state The target state for the task.
-  */
+   * @brief Transitions the task to a new state.
+   *
+   * Manages the internal state of the motion control task.
+   * @param new_state The target state for the task.
+   */
   void transition_to_state(task::TaskState new_state) override;
-
 
   /**
    * @brief Performs initialization steps for the MappingTask.
@@ -76,16 +74,16 @@ protected:
   }
 
 private:
-
 #ifdef UNIT_TESTING
   FRIEND_TEST(MappingTaskTest, DefaultState);
   FRIEND_TEST(MappingTaskTest, LocalizationInitializesPose);
   FRIEND_TEST(MappingTaskTest, LidarIgnoredUntilLocalized);
 #endif
 
-  bool pose_initialized = false; ///< Flag indicating whether an initial localization estimate has been received.
-  Pose pose_est{};               ///< Stores the current best estimate of the robot's pose.
-  
+  bool pose_initialized =
+      false;       ///< Flag indicating whether an initial localization estimate has been received.
+  Pose pose_est{}; ///< Stores the current best estimate of the robot's pose.
+
   /**
    * @brief Handles incoming LiDAR data messages.
    *
@@ -94,7 +92,7 @@ private:
    * corresponding robot pose.
    * @param lidar_data A pointer to the received LidarDataMsg.
    */
-  void handle_lidar_data(const msg::LidarDataMsg *lidar_data);
+  void handle_lidar_data(const msg::LidarDataMsg* lidar_data);
 
   /**
    * @brief Handles incoming localization estimate messages.
@@ -104,5 +102,5 @@ private:
    * has been initialized.
    * @param loc_est_data A pointer to the received LocalizationEstimateMsg.
    */
-  void handle_localization_data(const msg::LocalizationEstimateMsg *loc_est_data);
+  void handle_localization_data(const msg::LocalizationEstimateMsg* loc_est_data);
 };

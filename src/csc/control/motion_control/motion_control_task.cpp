@@ -6,16 +6,13 @@
  * processing messages, managing state transitions, and calculating twist commands for a
  * differential drive system based on localization and waypoints.
  */
+#include "csc/control/motion_control/motion_control_task.h"
 #include <algorithm>
 #include <cmath>
 
-#include "csc/control/motion_control/motion_control_task.h"
-
 const msg::CmdVelMsg ZERO_VEL_CMD{}; ///< ZEROIZED VEL CMD
 
-MotionControlTask::~MotionControlTask()
-{
-}
+MotionControlTask::~MotionControlTask() {}
 
 /**
  * @brief Processes incoming messages based on their type.
@@ -23,9 +20,9 @@ MotionControlTask::~MotionControlTask()
  * Handles StateMsg for state transitions and HeartbeatMsg. Logs unhandled message types.
  * @param msg The message to process.
  */
-void MotionControlTask::process_message(const msg::Msg &msg)
+void MotionControlTask::process_message(const msg::Msg& msg)
 {
-  switch(msg.get_type())
+  switch (msg.get_type())
   {
     case msg::Type::StateMsg:
     {
@@ -57,7 +54,9 @@ void MotionControlTask::process_message(const msg::Msg &msg)
     }
     default:
     {
-      std::cout << get_name() << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type()) << std::endl;
+      std::cout << get_name()
+                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
+                << std::endl;
       break;
     }
   }
@@ -74,7 +73,8 @@ void MotionControlTask::process_message(const msg::Msg &msg)
  */
 void MotionControlTask::transition_to_state(task::TaskState new_state)
 {
-  if (new_state == current_state) return;
+  if (new_state == current_state)
+    return;
 
   std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
 
@@ -82,7 +82,6 @@ void MotionControlTask::transition_to_state(task::TaskState new_state)
   // to stop the robot before transitioning to the new state
   if (current_state == task::TaskState::RUNNING)
   {
-
     diff_drive.send_cmd_vel(ZERO_VEL_CMD);
     safe_publish(msg::Msg(this, ZERO_VEL_CMD));
   }
@@ -104,7 +103,7 @@ void MotionControlTask::transition_to_state(task::TaskState new_state)
       diff_drive.start();
       break;
     }
-      
+
     case task::TaskState::STOPPED:
     {
       diff_drive.stop();
@@ -117,18 +116,18 @@ void MotionControlTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state) << std::endl;
+      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
+                << std::endl;
       break;
     }
   }
   safe_publish(msg::Msg(this, msg::StateAckMsg{static_cast<uint8_t>(current_state)}));
 }
 
-
 void MotionControlTask::handle_localization_estimate(const msg::LocalizationEstimateMsg* loc)
 {
   current_loc_est = *loc;
-  loc_est_valid = true;
+  loc_est_valid   = true;
 
   // only send a command once we're RUNNING and after we've gotten at least one waypoint:
   if (current_state == task::TaskState::RUNNING && waypoint_valid)
@@ -151,7 +150,7 @@ void MotionControlTask::handle_safety_alert(const msg::SafetyAlertMsg* alert_msg
 void MotionControlTask::handle_waypoint(const msg::WaypointMsg* wp)
 {
   current_waypoint = *wp;
-  waypoint_valid = true;
+  waypoint_valid   = true;
 
   msg::CmdVelMsg cmd_to_send = calculate_twist_command();
 
@@ -179,46 +178,48 @@ msg::CmdVelMsg MotionControlTask::calculate_twist_command()
   }
 
   // Extract current pose
-  auto& pose = current_loc_est.est_pose.pose;
-  double x = pose.point(0);
-  double y = pose.point(1);
+  auto&  pose = current_loc_est.est_pose.pose;
+  double x    = pose.point(0);
+  double y    = pose.point(1);
   // Convert quaternion to yaw
-  auto& q = pose.orientation;
-  double siny = 2.0*(q(3)*q(2) + q(0)*q(1));
-  double cosy = q(3)*q(3) + q(0)*q(0) - q(1)*q(1) - q(2)*q(2);
+  auto&  q    = pose.orientation;
+  double siny = 2.0 * (q(3) * q(2) + q(0) * q(1));
+  double cosy = q(3) * q(3) + q(0) * q(0) - q(1) * q(1) - q(2) * q(2);
   double yaw  = std::atan2(siny, cosy);
 
   // Compute vector to waypoint
-  double gx = current_waypoint.goal_pose.point(0);
-  double gy = current_waypoint.goal_pose.point(1);
-  double dx = gx - x;
-  double dy = gy - y;
-  double dist = std::hypot(dx, dy);
+  double gx         = current_waypoint.goal_pose.point(0);
+  double gy         = current_waypoint.goal_pose.point(1);
+  double dx         = gx - x;
+  double dy         = gy - y;
+  double dist       = std::hypot(dx, dy);
   double target_yaw = std::atan2(dy, dx);
 
   // Yaw error normalized to [-pi, pi]
   double yaw_err = target_yaw - yaw;
-  while (yaw_err > M_PI)  yaw_err -= 2.0*M_PI;
-  while (yaw_err < -M_PI) yaw_err += 2.0*M_PI;
+  while (yaw_err > M_PI)
+    yaw_err -= 2.0 * M_PI;
+  while (yaw_err < -M_PI)
+    yaw_err += 2.0 * M_PI;
 
   // --- tuning parameters & thresholds ---
-  constexpr double DIST_TOL     = 0.05;  // 5cm = “we’re there”
-  constexpr double ANG_TOL      = 0.1;   // ≃6° before we drive forward
-  constexpr double K_LIN        = 0.5;   // m/s per m
-  constexpr double K_ANG        = 1.0;   // rad/s per rad
-  constexpr double MAX_LIN      = 0.4;   // m/s
-  constexpr double MAX_ANG      = 1.0;   // rad/s
+  constexpr double DIST_TOL = 0.05; // 5cm = “we’re there”
+  constexpr double ANG_TOL  = 0.1;  // ≃6° before we drive forward
+  constexpr double K_LIN    = 0.5;  // m/s per m
+  constexpr double K_ANG    = 1.0;  // rad/s per rad
+  constexpr double MAX_LIN  = 0.4;  // m/s
+  constexpr double MAX_ANG  = 1.0;  // rad/s
 
   // --- if we’re within the goal tolerance, stop and let NavigationTask send the next waypoint
   if (dist < DIST_TOL)
   {
-    return cmd;  // ZERO
+    return cmd; // ZERO
   }
 
   // --- phase 1: rotate until roughly aligned ---
   if (std::fabs(yaw_err) > ANG_TOL)
   {
-    double w = std::clamp(K_ANG * yaw_err, -MAX_ANG, MAX_ANG);
+    double w          = std::clamp(K_ANG * yaw_err, -MAX_ANG, MAX_ANG);
     cmd.twist.angular = {0.0, 0.0, w};
     // linear stays zero
     return cmd;
@@ -226,8 +227,8 @@ msg::CmdVelMsg MotionControlTask::calculate_twist_command()
 
   // --- phase 2: drive forward with small heading correction ---
   {
-    double v = std::clamp(K_LIN * dist, 0.0, MAX_LIN);
-    double w = std::clamp(K_ANG * yaw_err, -MAX_ANG, MAX_ANG);
+    double v          = std::clamp(K_LIN * dist, 0.0, MAX_LIN);
+    double w          = std::clamp(K_ANG * yaw_err, -MAX_ANG, MAX_ANG);
     cmd.twist.linear  = {v, 0.0, 0.0};
     cmd.twist.angular = {0.0, 0.0, w};
     return cmd;

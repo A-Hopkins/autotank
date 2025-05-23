@@ -2,21 +2,20 @@
  * @file safety_monitor_task.h
  * @brief Defines the SafetyMonitorTask class for providing a safety check on collisions.
  *
- * This class subscribes to lidar and pose estimates to check quickly and non blocking if 
+ * This class subscribes to lidar and pose estimates to check quickly and non blocking if
  * a collision is about to occur to send an emergency stop command.
  */
 
 #pragma once
 
-#include "protocore/include/task.h"
 #include "msg/lidar_msg.h"
 #include "msg/localization_estimate_msg.h"
 #include "msg/safety_alert_msg.h"
+#include "protocore/include/task.h"
 
 #ifdef UNIT_TESTING
 #include <gtest/gtest_prod.h>
 #endif
-
 
 class SafetyMonitorTask : public task::Task
 {
@@ -32,7 +31,7 @@ protected:
   /**
    * @brief Constructs an SafetyMonitorTask instance
    */
-  SafetyMonitorTask(const std::string& name = "SafetyMonitorTask") : task::Task(name) { }
+  SafetyMonitorTask(const std::string& name = "SafetyMonitorTask") : task::Task(name) {}
 
   /**
    * @brief Processes incoming messages.
@@ -48,7 +47,6 @@ protected:
    */
   void transition_to_state(task::TaskState new_state) override;
 
-
   /**
    * @brief Performs initialization steps for the SafetyMonitorTask.
    *
@@ -62,7 +60,6 @@ protected:
   }
 
 private:
-
 #ifdef UNIT_TESTING
   FRIEND_TEST(SafetyMonitorTaskTest, NoLocalization_NoAlert);
   FRIEND_TEST(SafetyMonitorTaskTest, LocalizationOnly_NoAlert);
@@ -71,18 +68,20 @@ private:
   FRIEND_TEST(SafetyMonitorTaskTest, ZeroSpeed_ZeroTTC);
 #endif
 
-  bool loc_initialized = false;           ///< Flag indicating whether an initial localization estimate has been received.
-  msg::LocalizationEstimateMsg loc_est{}; ///< Stores the current best estimate of the robot's pose and velocity
+  bool loc_initialized =
+      false; ///< Flag indicating whether an initial localization estimate has been received.
+  msg::LocalizationEstimateMsg
+      loc_est{}; ///< Stores the current best estimate of the robot's pose and velocity
 
   /**
    * @brief Handles incoming LiDAR data messages.
    *
-   * If a valid localization estimate has been received, this method 
+   * If a valid localization estimate has been received, this method
    * will check the distances returned from the different points and compare
    * with the latest pose to check if a collision is likely.
    * @param lidar_data A pointer to the received LidarDataMsg.
    */
-  void handle_lidar_data(const msg::LidarDataMsg *lidar_data);
+  void handle_lidar_data(const msg::LidarDataMsg* lidar_data);
 
   /**
    * @brief Handles incoming localization estimate messages.
@@ -92,7 +91,8 @@ private:
    * has been initialized.
    * @param loc_est_data A pointer to the received LocalizationEstimateMsg.
    */
-  void handle_localization_data(const msg::LocalizationEstimateMsg *loc_est_data);
+  void handle_localization_data(const msg::LocalizationEstimateMsg* loc_est_data);
 
-  std::optional<msg::SafetyAlertMsg> detect_collision(const msg::LidarDataMsg *lidar_data, const msg::LocalizationEstimateMsg& loc_est);
+  std::optional<msg::SafetyAlertMsg> detect_collision(const msg::LidarDataMsg* lidar_data,
+                                                      const msg::LocalizationEstimateMsg& loc_est);
 };

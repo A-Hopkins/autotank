@@ -7,22 +7,19 @@
  * sensor data processing, localization, and control. It then starts the system and
  * waits for shutdown.
  */
-#include <iostream>
-
-#include "protocore/include/broker.h"
-#include "protocore/include/state_manager.h"
-#include "protocore/include/heart_beat.h"
-
-#include "csc/sensors/imu/imu_task.h"
-#include "csc/sensors/odom/odom_task.h"
-#include "csc/sensors/lidar/lidar_task.h"
+#include "csc/control/motion_control/motion_control_task.h"
 #include "csc/localization/localization_task.h"
 #include "csc/mapping/mapping_task.h"
-#include "csc/control/motion_control/motion_control_task.h"
-#include "csc/safety_monitor/safety_monitor_task.h"
 #include "csc/navigation/navigation_task.h"
-
+#include "csc/safety_monitor/safety_monitor_task.h"
+#include "csc/sensors/imu/imu_task.h"
+#include "csc/sensors/lidar/lidar_task.h"
+#include "csc/sensors/odom/odom_task.h"
+#include "protocore/include/broker.h"
+#include "protocore/include/heart_beat.h"
+#include "protocore/include/state_manager.h"
 #include <gz/transport.hh>
+#include <iostream>
 
 /**
  * @brief Main function for the Autotank application.
@@ -38,16 +35,17 @@ int main()
   Broker::initialize();
 
   // Create all tasks for the system
-  std::shared_ptr<StateManager> state_manager = StateManager::create();
-  std::shared_ptr<HeartBeatTask> heart_beat_task = HeartBeatTask::create("HeartBeat", state_manager);
-  std::shared_ptr<IMUTask> imu_task = IMUTask::create();
-  std::shared_ptr<OdomTask> odom_task = OdomTask::create();
-  std::shared_ptr<LidarTask> lidar_task = LidarTask::create();
+  std::shared_ptr<StateManager>  state_manager = StateManager::create();
+  std::shared_ptr<HeartBeatTask> heart_beat_task =
+      HeartBeatTask::create("HeartBeat", state_manager);
+  std::shared_ptr<IMUTask>           imu_task            = IMUTask::create();
+  std::shared_ptr<OdomTask>          odom_task           = OdomTask::create();
+  std::shared_ptr<LidarTask>         lidar_task          = LidarTask::create();
   std::shared_ptr<MotionControlTask> motion_control_task = MotionControlTask::create();
-  std::shared_ptr<LocalizationTask> localization_task = LocalizationTask::create();
-  std::shared_ptr<MappingTask> mapping_task = MappingTask::create();
+  std::shared_ptr<LocalizationTask>  localization_task   = LocalizationTask::create();
+  std::shared_ptr<MappingTask>       mapping_task        = MappingTask::create();
   std::shared_ptr<SafetyMonitorTask> safety_monitor_task = SafetyMonitorTask::create();
-  std::shared_ptr<NavigationTask> navigation_task = NavigationTask::create();
+  std::shared_ptr<NavigationTask>    navigation_task     = NavigationTask::create();
 
   // Register the heart beat task with the state manager
   state_manager->set_task_registration_observer(heart_beat_task);
@@ -67,7 +65,7 @@ int main()
   state_manager->initialize();
 
   state_manager->demand_state_transition(task::TaskState::RUNNING);
-  
+
   gz::transport::waitForShutdown();
   state_manager->shutdown();
 

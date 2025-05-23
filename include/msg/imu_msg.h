@@ -7,10 +7,9 @@
 
 #pragma once
 
+#include "common_types/header.h"
 #include "kfplusplus/include/linalg.h"
 #include "msg/declare_msg.h"
-#include "common_types/header.h"
-
 
 namespace msg
 {
@@ -32,7 +31,7 @@ namespace msg
      * The order is [x, y, z, w].
      */
     linalg::Vector<4> orientation;
-    
+
     /**
      * @brief Covariance matrix for the orientation estimate.
      * Row/column order corresponds to x, y, z axes of rotation.
@@ -45,7 +44,7 @@ namespace msg
      * Components are [x, y, z].
      */
     linalg::Vector<3> angular_velocity;
-    
+
     /**
      * @brief Covariance matrix for the angular velocity estimate.
      * Row/column order corresponds to x, y, z axes.
@@ -64,4 +63,4 @@ namespace msg
      */
     linalg::Matrix<3, 3> linear_acceleration_covariance;
   };
-}
+} // namespace msg

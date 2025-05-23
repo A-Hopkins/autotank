@@ -6,8 +6,8 @@
  */
 #pragma once
 
-#include "msg/declare_msg.h"
 #include "common_types/pose.h"
+#include "msg/declare_msg.h"
 
 namespace msg
 {
@@ -19,4 +19,4 @@ namespace msg
      */
     Pose goal_pose;
   };
-}
+} // namespace msg

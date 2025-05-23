@@ -7,10 +7,10 @@
  */
 
 #pragma once
-#include "protocore/include/task.h"
-#include "msg/lidar_msg.h"
 #include "lidar.h"
- 
+#include "msg/lidar_msg.h"
+#include "protocore/include/task.h"
+
 /**
  * @class LidarTask
  * @brief A task that manages and processes lidar sensor data.
@@ -23,10 +23,9 @@
 class LidarTask : public task::Task
 {
 public:
-
   /**
    * @brief Factory method to create a shared pointer to a LidarTask instance.
-   * 
+   *
    * Initializes the task after creation.
    * @return A std::shared_ptr<LidarTask> pointing to the newly created instance.
    */
@@ -45,25 +44,26 @@ public:
 protected:
   /**
    * @brief Constructs a LidarTask instance with a specified name.
-   * 
+   *
    * Initializes the base Task class with the given name. The constructor is protected
    * to enforce creation through the static `create` method.
    * @param name The name assigned to this task instance. Defaults to "LidarTask".
    */
-  LidarTask(const std::string& name = "LidarTask") : task::Task(name) { }
+  LidarTask(const std::string& name = "LidarTask") : task::Task(name) {}
 
   /**
    * @brief Processes incoming messages based on their type.
-   * 
-   * Handles messages relevant to the LidarTask, potentially including state changes or configuration updates.
+   *
+   * Handles messages relevant to the LidarTask, potentially including state changes or
+   * configuration updates.
    * @param msg The message to process.
    */
   void process_message(const msg::Msg& msg) override;
 
   /**
    * @brief Transitions the task to a new operational state.
-   * 
-   * This method handles the logic required when the task changes state, 
+   *
+   * This method handles the logic required when the task changes state,
    * such as starting or stopping lidar data acquisition based on the new state.
    * @param new_state The target state to transition into.
    */
@@ -71,21 +71,19 @@ protected:
 
   /**
    * @brief Performs initial setup for the LidarTask.
-   * 
-   * Called by the `create` method. Subscribes to necessary message types, 
+   *
+   * Called by the `create` method. Subscribes to necessary message types,
    * such as StateMsg, to react to system state changes.
    */
-  void on_initialize() override
-  {
-    safe_subscribe(msg::Type::StateMsg);
-  }
+  void on_initialize() override { safe_subscribe(msg::Type::StateMsg); }
 
 private:
-  Lidar lidar_sensor; ///< Instance of the Lidar sensor driver used for data acquisition and interaction.
+  Lidar lidar_sensor; ///< Instance of the Lidar sensor driver used for data acquisition and
+                      ///< interaction.
 
   /**
    * @brief Processes incoming lidar sensor data messages.
-   * 
+   *
    * Extracts and handles lidar readings from the provided message.
    * @param data A LidarDataMsg object containing the lidar sensor readings.
    */

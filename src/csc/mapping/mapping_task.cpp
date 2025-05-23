@@ -2,16 +2,14 @@
  * @file mapping_task.cpp
  * @brief Implements the MappingTask class methods.
  */
-#include <iostream>
 #include "csc/mapping/mapping_task.h"
 #include "csc/services/map_service/map_service.h"
+#include <iostream>
 
 /**
  * @brief Destructor for MappingTask.
  */
-MappingTask::~MappingTask()
-{
-}
+MappingTask::~MappingTask() {}
 
 /**
  * @brief Processes incoming messages for the MappingTask.
@@ -53,7 +51,9 @@ void MappingTask::process_message(const msg::Msg& msg)
 
     default:
     {
-      std::cout << get_name() << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type()) << std::endl;
+      std::cout << get_name()
+                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
+                << std::endl;
       break;
     }
   }
@@ -68,7 +68,8 @@ void MappingTask::process_message(const msg::Msg& msg)
  */
 void MappingTask::transition_to_state(task::TaskState new_state)
 {
-  if (new_state == current_state) return;
+  if (new_state == current_state)
+    return;
   std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
   current_state = new_state;
   switch (new_state)
@@ -85,7 +86,7 @@ void MappingTask::transition_to_state(task::TaskState new_state)
     {
       break;
     }
-      
+
     case task::TaskState::STOPPED:
     {
       break;
@@ -96,7 +97,8 @@ void MappingTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state) << std::endl;
+      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
+                << std::endl;
       break;
     }
   }
@@ -105,7 +107,8 @@ void MappingTask::transition_to_state(task::TaskState new_state)
 
 void MappingTask::handle_localization_data(const msg::LocalizationEstimateMsg* loc_est_data)
 {
-  if (!loc_est_data) return;
+  if (!loc_est_data)
+    return;
 
   // copy the entire PoseWithCovariance.pose into your Pose struct
   pose_est.point       = loc_est_data->est_pose.pose.point;
@@ -114,11 +117,10 @@ void MappingTask::handle_localization_data(const msg::LocalizationEstimateMsg* l
   pose_initialized = true;
 }
 
-void MappingTask::handle_lidar_data(const msg::LidarDataMsg *lidar_data)
+void MappingTask::handle_lidar_data(const msg::LidarDataMsg* lidar_data)
 {
-
-  if (!pose_initialized) return;
+  if (!pose_initialized)
+    return;
 
   MapService::instance().update_map(*lidar_data, pose_est);
-
 }

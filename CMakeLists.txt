@@ -104,3 +104,14 @@ endif()
 
 enable_testing()
 add_subdirectory(test)
+
+file(GLOB_RECURSE ALL_SOURCE_FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp"
+  )
+
+add_custom_target(
+  clang_format
+  COMMAND clang-format -i ${ALL_SOURCE_FILES}
+)

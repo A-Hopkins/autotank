@@ -3,10 +3,9 @@
  * @brief Implements the navigation task
  *
  */
+#include "csc/navigation/navigation_task.h"
 #include <cmath>
 #include <random>
-
-#include "csc/navigation/navigation_task.h"
 
 static std::mt19937& rng()
 {
@@ -39,7 +38,9 @@ void NavigationTask::process_message(const msg::Msg& msg)
 
     default:
     {
-      std::cout << get_name() << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type()) << std::endl;
+      std::cout << get_name()
+                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
+                << std::endl;
       break;
     }
   }
@@ -47,7 +48,8 @@ void NavigationTask::process_message(const msg::Msg& msg)
 
 void NavigationTask::transition_to_state(task::TaskState new_state)
 {
-  if (new_state == current_state) return;
+  if (new_state == current_state)
+    return;
   std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
   current_state = new_state;
 
@@ -69,7 +71,7 @@ void NavigationTask::transition_to_state(task::TaskState new_state)
       evaluate_behavior();
       break;
     }
-      
+
     case task::TaskState::STOPPED:
     {
       break;
@@ -80,7 +82,8 @@ void NavigationTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state) << std::endl;
+      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
+                << std::endl;
       break;
     }
   }
@@ -89,14 +92,15 @@ void NavigationTask::transition_to_state(task::TaskState new_state)
 
 void NavigationTask::handle_localization_estimate(const msg::LocalizationEstimateMsg* loc_est)
 {
-  if (!loc_est) return;
+  if (!loc_est)
+    return;
 
   current_loc_est = *loc_est;
 
   // capture home on first ever update
   if (!home_pose_initialized)
   {
-    home_pose = current_loc_est.est_pose.pose;
+    home_pose             = current_loc_est.est_pose.pose;
     home_pose_initialized = true;
   }
 
@@ -109,8 +113,8 @@ void NavigationTask::handle_localization_estimate(const msg::LocalizationEstimat
 
   // otherwise check if we've reached our current waypoint
   const Pose& goal = active_goal->target_pose;
-  double dx = current_loc_est.est_pose.pose.point(0) - goal.point(0);
-  double dy = current_loc_est.est_pose.pose.point(1) - goal.point(1);
+  double      dx   = current_loc_est.est_pose.pose.point(0) - goal.point(0);
+  double      dy   = current_loc_est.est_pose.pose.point(1) - goal.point(1);
 
   if (std::sqrt(dx * dx + dy * dy) < POSITION_TOLERANCE)
   {
@@ -133,9 +137,9 @@ bool NavigationTask::plan_path_to_goal()
   }
 
   // store and initialize iterator
-  planned_path = std::move(path);
+  planned_path  = std::move(path);
   path_iterator = planned_path->begin();
-  path_valid = true;
+  path_valid    = true;
 
   return true;
 }
@@ -143,15 +147,16 @@ bool NavigationTask::plan_path_to_goal()
 void NavigationTask::evaluate_behavior()
 {
   // must have home initialized
-  if (!home_pose_initialized) return;
+  if (!home_pose_initialized)
+    return;
 
   // first time in RUNNING: GO_HOME if far, else EXPLORE
   if (current_behavior == BehaviorMode::NONE)
   {
-    auto& p = current_loc_est.est_pose.pose.point;
-    double dx = p(0) - home_pose.point(0);
-    double dy = p(1) - home_pose.point(1);
-    double dist = std::sqrt(dx*dx + dy*dy);
+    auto&  p    = current_loc_est.est_pose.pose.point;
+    double dx   = p(0) - home_pose.point(0);
+    double dy   = p(1) - home_pose.point(1);
+    double dist = std::sqrt(dx * dx + dy * dy);
 
     if (dist > 0.5)
     {
@@ -166,7 +171,7 @@ void NavigationTask::evaluate_behavior()
 
   // if we finish GO_HOME, switch to EXPLORE
   if (current_behavior == BehaviorMode::GO_HOME &&
-     (!path_valid || path_iterator == planned_path->end()))
+      (!path_valid || path_iterator == planned_path->end()))
   {
     set_behavior(BehaviorMode::EXPLORE);
   }
@@ -185,7 +190,7 @@ void NavigationTask::send_next_waypoint()
   // overwrite the active_goal’s pose to be *this* waypoint
   active_goal->target_pose = next;
 
-  // publish current waypoint 
+  // publish current waypoint
   msg::WaypointMsg next_waypoint;
   next_waypoint.goal_pose = next;
 
@@ -237,8 +242,8 @@ void NavigationTask::go_home_behavior()
   MissionGoal goal;
 
   goal.target_pose = home_pose;
-  goal.mode = current_behavior;
-  active_goal = goal;
+  goal.mode        = current_behavior;
+  active_goal      = goal;
 
   if (!plan_path_to_goal())
   {
@@ -252,18 +257,17 @@ void NavigationTask::go_home_behavior()
 
 void NavigationTask::explore_world_behavior()
 {
-  
   // get frontier candidates
   auto frontiers = MapService::instance().find_frontiers(current_loc_est.est_pose.pose);
 
   if (frontiers.get_path_size() > 0)
   {
     // 2) Scan to find the nearest one
-    const auto &me = current_loc_est.est_pose.pose.point;
-    double best_d = std::numeric_limits<double>::infinity();
-    Pose best_p;
+    const auto& me     = current_loc_est.est_pose.pose.point;
+    double      best_d = std::numeric_limits<double>::infinity();
+    Pose        best_p;
 
-    for (auto &p : frontiers)
+    for (auto& p : frontiers)
     {
       double dx = p.point(0) - me(0);
       double dy = p.point(1) - me(1);
@@ -277,9 +281,9 @@ void NavigationTask::explore_world_behavior()
 
     // 3) Set that as our active goal
     MissionGoal goal;
-    goal.mode = BehaviorMode::EXPLORE;
+    goal.mode        = BehaviorMode::EXPLORE;
     goal.target_pose = best_p;
-    active_goal = goal;
+    active_goal      = goal;
 
     // 4) Plan & send
     if (!plan_path_to_goal())
@@ -295,15 +299,15 @@ void NavigationTask::explore_world_behavior()
   }
 
   // --- fallback: random sampling of free space ---
-  std::uniform_real_distribution<double> dx(-10.0,10.0);
-  std::uniform_real_distribution<double> dy(-10.0,10.0);
+  std::uniform_real_distribution<double> dx(-10.0, 10.0);
+  std::uniform_real_distribution<double> dy(-10.0, 10.0);
 
   constexpr int MAX_TRIES = 20;
-  bool found = false;
+  bool          found     = false;
 
   for (int i = 0; i < MAX_TRIES; ++i)
   {
-    Pose cand = current_loc_est.est_pose.pose;
+    Pose cand     = current_loc_est.est_pose.pose;
     cand.point(0) = dx(rng());
     cand.point(1) = dy(rng());
 

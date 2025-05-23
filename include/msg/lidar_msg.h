@@ -5,12 +5,11 @@
  * This file provides the definition for a Laser Scan sensor reading.
  */
 #pragma once
-#include <array>
-#include <cstdint>
-
+#include "common_types/header.h"
 #include "kfplusplus/include/linalg.h"
 #include "msg/declare_msg.h"
-#include "common_types/header.h"
+#include <array>
+#include <cstdint>
 
 namespace msg
 {
@@ -30,7 +29,8 @@ namespace msg
     Header header;
 
     /**
-     * @brief Start angle of the scan [rad]. Measurement angles are relative to the sensor's coordinate frame.
+     * @brief Start angle of the scan [rad]. Measurement angles are relative to the sensor's
+     * coordinate frame.
      */
     double angle_min;
 
@@ -45,7 +45,8 @@ namespace msg
     double angle_increment;
 
     /**
-     * @brief Time between measurements [seconds]. If your scanner is moving, this value allows estimation of the pose of the scanner for each measurement.
+     * @brief Time between measurements [seconds]. If your scanner is moving, this value allows
+     * estimation of the pose of the scanner for each measurement.
      */
     double time_increment;
 
@@ -70,13 +71,15 @@ namespace msg
     uint32_t ranges_count;
 
     /**
-     * @brief Array of range measurements [m]. Order corresponds to angles from angle_min to angle_max. Invalid measurements may be represented by Inf or NaN.
+     * @brief Array of range measurements [m]. Order corresponds to angles from angle_min to
+     * angle_max. Invalid measurements may be represented by Inf or NaN.
      */
     std::array<double, MAX_LIDAR_POINTS> ranges;
 
     /**
-     * @brief Array of intensity measurements [device-specific units]. Order corresponds to range measurements. May be empty if the device does not provide intensity readings.
+     * @brief Array of intensity measurements [device-specific units]. Order corresponds to range
+     * measurements. May be empty if the device does not provide intensity readings.
      */
     std::array<double, MAX_LIDAR_POINTS> intensities;
   };
-}
+} // namespace msg

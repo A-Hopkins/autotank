@@ -5,10 +5,9 @@
  * This file contains the implementation of the LidarTask class, which is responsible
  * for managing the Lidar sensor, processing incoming messages, and publishing Lidar data.
  */
-#include <iostream>
-
 #include "csc/sensors/lidar/lidar_task.h"
 #include "csc/sensors/lidar/lidar.h"
+#include <iostream>
 
 /**
  * @brief Destructor for the LidarTask.
@@ -28,8 +27,7 @@ LidarTask::~LidarTask()
  */
 void LidarTask::process_message(const msg::Msg& msg)
 {
-
-  switch(msg.get_type())
+  switch (msg.get_type())
   {
     case msg::Type::StateMsg:
     {
@@ -43,7 +41,9 @@ void LidarTask::process_message(const msg::Msg& msg)
     }
     default:
     {
-      std::cout << get_name() << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type()) << std::endl;
+      std::cout << get_name()
+                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
+                << std::endl;
       break;
     }
   }
@@ -76,7 +76,7 @@ void LidarTask::transition_to_state(task::TaskState new_state)
       lidar_sensor.start([this](const msg::LidarDataMsg& data) { process_lidar_data(data); });
       break;
     }
-      
+
     case task::TaskState::STOPPED:
     {
       lidar_sensor.stop();
@@ -89,7 +89,8 @@ void LidarTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state) << std::endl;
+      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
+                << std::endl;
       break;
     }
   }

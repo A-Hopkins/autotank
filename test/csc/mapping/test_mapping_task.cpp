@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
-#include "protocore/include/broker.h"
 #include "csc/mapping/mapping_task.h"
 #include "csc/services/map_service/map_service.h"
+#include "protocore/include/broker.h"
+#include <gtest/gtest.h>
 
 class MappingTaskTest : public ::testing::Test
 {
@@ -14,7 +14,7 @@ protected:
     Broker::initialize();
 
     // Reset the map service to a known state:
-    auto &mapserv = MapService::instance();
+    auto& mapserv = MapService::instance();
 
     task = MappingTask::create();
   }
@@ -33,8 +33,8 @@ TEST_F(MappingTaskTest, LocalizationInitializesPose)
 {
   msg::LocalizationEstimateMsg loc;
   // fill in a nontrivial pose:
-  loc.est_pose.pose.point(0) = 1.1;
-  loc.est_pose.pose.point(1) = -2.2;
+  loc.est_pose.pose.point(0)       = 1.1;
+  loc.est_pose.pose.point(1)       = -2.2;
   loc.est_pose.pose.orientation(0) = 0.0;
   loc.est_pose.pose.orientation(1) = 0.0;
   loc.est_pose.pose.orientation(2) = 0.7;
@@ -52,15 +52,15 @@ TEST_F(MappingTaskTest, LidarIgnoredUntilLocalized)
 {
   msg::LidarDataMsg scan;
   scan.ranges.fill(1.23);
-  scan.ranges_count = scan.ranges.size();
-  scan.range_min = 0.1;
-  scan.range_max = 10.0;
-  scan.angle_min = 0.0;
+  scan.ranges_count    = scan.ranges.size();
+  scan.range_min       = 0.1;
+  scan.range_max       = 10.0;
+  scan.angle_min       = 0.0;
   scan.angle_increment = 0.0;
   scan.header.frame_id = "test";
 
   // 1) BEFORE localization: calling lidar must not throw, not touch MapService seq
-  auto &ms = MapService::instance();
+  auto&    ms     = MapService::instance();
   uint32_t before = ms.get_sequence();
   task->handle_lidar_data(&scan);
   uint32_t after = ms.get_sequence();
@@ -68,12 +68,13 @@ TEST_F(MappingTaskTest, LidarIgnoredUntilLocalized)
 
   // 2) AFTER localization: seq should bump by 2 (start/finish)
   msg::LocalizationEstimateMsg loc;
-  loc.est_pose.pose.point(0) = 0;
-  loc.est_pose.pose.orientation(3)=1.0;
+  loc.est_pose.pose.point(0)       = 0;
+  loc.est_pose.pose.orientation(3) = 1.0;
   task->handle_localization_data(&loc);
 
   before = ms.get_sequence();
   task->handle_lidar_data(&scan);
   after = ms.get_sequence();
-  EXPECT_EQ(after - before, 2u) << "MapService::update_map must be invoked once (two seq increments)";
+  EXPECT_EQ(after - before, 2u)
+      << "MapService::update_map must be invoked once (two seq increments)";
 }

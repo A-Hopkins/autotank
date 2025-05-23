@@ -7,7 +7,8 @@
  *   - A `std::variant` type named `MessageVariant` capable of holding any defined message type.
  *   - A `constexpr` array `message_priorities` mapping each message type to its priority level.
  *   - An `enum class Type` enumerating all defined message types.
- *   - A `constexpr` array `message_type_names` containing string representations of the message types.
+ *   - A `constexpr` array `message_type_names` containing string representations of the message
+ * types.
  *   - A utility function `msg_type_to_string` to convert the enum `Type` to its string name.
  *
  * **Override Mechanism:**
@@ -30,65 +31,57 @@
  * be automatically updated based on the modified `MESSAGE_VARIANT_TYPES` list.
  */
 #pragma once
+#include "cmdvel_msg.h"
+#include "imu_msg.h"
+#include "lidar_msg.h"
+#include "localization_estimate_msg.h"
+#include "msg/system_msgs.h"
+#include "odom_msg.h"
+#include "safety_alert_msg.h"
+#include "waypoint_msg.h"
 #include <cstdint>
 #include <string>
 #include <variant>
 
-#include "msg/system_msgs.h"
-#include "imu_msg.h"
-#include "odom_msg.h"
-#include "lidar_msg.h"
-#include "cmdvel_msg.h"
-#include "localization_estimate_msg.h"
-#include "safety_alert_msg.h"
-#include "waypoint_msg.h"
-
 namespace msg
 {
-  // List all message types and their priorities here.
-  #ifndef MESSAGE_VARIANT_TYPES
-  #define MESSAGE_VARIANT_TYPES(X)      \
-      X(StateMsg,                 100), \
-      X(StateAckMsg,               99), \
-      X(SafetyAlertMsg,            90), \
-      X(HeartbeatMsg,              50), \
-      X(HeartbeatAckMsg,           49), \
-      X(LocalizationEstimateMsg,   20), \
-      X(CmdVelMsg,                 15), \
-      X(WaypointMsg,               12), \
-      X(IMUDataMsg,                10), \
-      X(OdomDataMsg,               10), \
-      X(LidarDataMsg,              10)
-  #endif
-  // Message type declarations are provided in "system_msgs.h"
-  // Define the MessageVariant type using the list of message types.
-  #define MSG_VARIANT_TYPE(TYPE, PRIORITY) TYPE
+// List all message types and their priorities here.
+#ifndef MESSAGE_VARIANT_TYPES
+#define MESSAGE_VARIANT_TYPES(X)                                                                   \
+  X(StateMsg, 100), X(StateAckMsg, 99), X(SafetyAlertMsg, 90), X(HeartbeatMsg, 50),                \
+      X(HeartbeatAckMsg, 49), X(LocalizationEstimateMsg, 20), X(CmdVelMsg, 15),                    \
+      X(WaypointMsg, 12), X(IMUDataMsg, 10), X(OdomDataMsg, 10), X(LidarDataMsg, 10)
+#endif
+// Message type declarations are provided in "system_msgs.h"
+// Define the MessageVariant type using the list of message types.
+#define MSG_VARIANT_TYPE(TYPE, PRIORITY) TYPE
   using MessageVariant = std::variant<MESSAGE_VARIANT_TYPES(MSG_VARIANT_TYPE)>;
   // Define the Type enum using the list of message types.
   enum class Type
   {
     MESSAGE_VARIANT_TYPES(MSG_VARIANT_TYPE)
   };
-  #undef MSG_VARIANT_TYPE
+#undef MSG_VARIANT_TYPE
 
-  // Then, generate a compile-time array of priorities corresponding to each variant alternative:
-  #define MSG_VARIANT_TYPE(TYPE, PRIORITY) PRIORITY
-  using Priority = uint16_t;
-  constexpr Priority message_priorities[] = { MESSAGE_VARIANT_TYPES(MSG_VARIANT_TYPE) };
-  #undef MSG_VARIANT_TYPE
+// Then, generate a compile-time array of priorities corresponding to each variant alternative:
+#define MSG_VARIANT_TYPE(TYPE, PRIORITY) PRIORITY
+  using Priority                          = uint16_t;
+  constexpr Priority message_priorities[] = {MESSAGE_VARIANT_TYPES(MSG_VARIANT_TYPE)};
+#undef MSG_VARIANT_TYPE
 
-  // Generate a compile-time array of type names
-  #define MSG_VARIANT_TYPE(TYPE, PRIORITY) #TYPE
-  inline constexpr const char* message_type_names[] = { MESSAGE_VARIANT_TYPES(MSG_VARIANT_TYPE) };
-  #undef MSG_VARIANT_TYPE
+// Generate a compile-time array of type names
+#define MSG_VARIANT_TYPE(TYPE, PRIORITY) #TYPE
+  inline constexpr const char* message_type_names[] = {MESSAGE_VARIANT_TYPES(MSG_VARIANT_TYPE)};
+#undef MSG_VARIANT_TYPE
 
   // Utility function to convert message types to a string.
   inline std::string msg_type_to_string(Type type)
   {
     size_t index = static_cast<size_t>(type);
-    if (index < std::size(message_type_names)) {
+    if (index < std::size(message_type_names))
+    {
       return message_type_names[index];
     }
     return "Unknown";
   }
-}
+} // namespace msg

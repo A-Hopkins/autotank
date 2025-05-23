@@ -1,15 +1,17 @@
 /**
  * @file odom_task.h
- * @brief Defines the OdomTask class, responsible for handling wheel odometry sensor data processing.
+ * @brief Defines the OdomTask class, responsible for handling wheel odometry sensor data
+ * processing.
  *
  * The OdomTask class extends BaseTask and integrates with an odometry sensor to process and manage
- * wheel odometry measurement data. It provides functionality to handle and process odometry readings.
+ * wheel odometry measurement data. It provides functionality to handle and process odometry
+ * readings.
  */
 
 #pragma once
-#include "protocore/include/task.h"
 #include "msg/odom_msg.h"
 #include "odom.h"
+#include "protocore/include/task.h"
 
 /**
  * @class OdomTask
@@ -23,7 +25,6 @@
 class OdomTask : public task::Task
 {
 public:
-
   /**
    * @brief Factory method to create a shared pointer to an OdomTask instance.
    *
@@ -47,7 +48,7 @@ protected:
    * @brief Constructs an OdomTask instance.
    * @param name The name of the task. Defaults to "OdomTask".
    */
-  OdomTask(const std::string& name = "OdomTask") : task::Task(name) { }
+  OdomTask(const std::string& name = "OdomTask") : task::Task(name) {}
 
   /**
    * @brief Processes incoming messages.
@@ -58,7 +59,7 @@ protected:
   /**
    * @brief Transitions the task to a new state.
    *
-   * 
+   *
    */
   void transition_to_state(task::TaskState new_state) override;
 
@@ -67,10 +68,7 @@ protected:
    *
    * Subscribes the task to StateMsg messages.
    */
-  void on_initialize() override
-  {
-    safe_subscribe(msg::Type::StateMsg);
-  }
+  void on_initialize() override { safe_subscribe(msg::Type::StateMsg); }
 
 private:
   Odom odom_sensor; ///< Instance of the Odom sensor used for data retrieval and processing.

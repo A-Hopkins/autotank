@@ -1,17 +1,17 @@
 /**
  * @file gazebo_diff_drive.cpp
- * @brief Implements the DiffDrive interface for controlling a differential drive robot in Gazebo simulation.
+ * @brief Implements the DiffDrive interface for controlling a differential drive robot in Gazebo
+ * simulation.
  *
  * This file provides the Gazebo-specific implementation for sending velocity commands
  * to a simulated differential drive robot using Gazebo Transport (gz-transport).
  */
 
-#include <gz/transport.hh>
-#include <gz/msgs.hh>
-
 #include "csc/control/motion_control/diff_drive.h"
-#include "msg/cmdvel_msg.h"
 #include "gazebo_helpers.h"
+#include "msg/cmdvel_msg.h"
+#include <gz/msgs.hh>
+#include <gz/transport.hh>
 
 /** @brief Gazebo Transport node for communication. */
 static gz::transport::Node node;
@@ -23,7 +23,7 @@ static bool running = false;
 /**
  * @brief Default constructor for the Gazebo DiffDrive implementation.
  */
-DiffDrive::DiffDrive() { }
+DiffDrive::DiffDrive() {}
 
 /**
  * @brief Starts the Gazebo differential drive interface.
@@ -64,7 +64,8 @@ void DiffDrive::stop()
 void DiffDrive::send_cmd_vel(const msg::CmdVelMsg& cmdvel)
 {
   // Only publish if the interface is running and the publisher is valid.
-  if (!running || !pub) return;
+  if (!running || !pub)
+    return;
 
   // Create a Gazebo Twist message.
   gz::msgs::Twist msg;

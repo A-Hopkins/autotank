@@ -21,6 +21,11 @@ struct Pose
    * The w component is the scalar part.
    */
   linalg::Vector<4> orientation;
+
+  std::string str() const
+  {
+    return "Pose { point: " + point.str() + ", orientation: " + orientation.str() + " }";
+  }
 };
 
 /**
@@ -40,4 +45,9 @@ struct PoseWithCovariance
    * The orientation part uses a fixed-axis representation (roll, pitch, yaw).
    */
   linalg::Matrix<6, 6> covariance;
+
+  std::string str() const
+  {
+    return "PoseWithCovariance { " + pose.str() + ", covariance: " + covariance.str() + " }";
+  }
 };

@@ -62,5 +62,15 @@ namespace msg
      * Row/column order corresponds to x, y, z axes.
      */
     linalg::Matrix<3, 3> linear_acceleration_covariance;
+
+    std::string str() const override
+    {
+      return "IMUDataMsg { orientation: " + orientation.str() +
+            ", orientation_covariance: " + orientation_covariance.str() +
+            ", angular_velocity: " + angular_velocity.str() +
+            ", angular_velocity_covariance: " + angular_velocity_covariance.str() +
+            ", linear_acceleration: " + linear_acceleration.str() +
+            ", linear_acceleration_covariance: " + linear_acceleration_covariance.str() + " }";
+    }
   };
 } // namespace msg

@@ -24,6 +24,11 @@ struct Twist
    * Represents the rate of change of orientation around the x, y, and z axes.
    */
   linalg::Vector<3> angular;
+
+  std::string str() const
+  {
+    return "Twist { linear: " + linear.str() + ", angular: " + angular.str() + " }";
+  }
 };
 
 /**
@@ -43,4 +48,9 @@ struct TwistWithCovariance
    * angular velocities.
    */
   linalg::Matrix<6, 6> covariance;
+
+  std::string str() const
+  {
+    return "TwistWithCovariance { " + twist.str() + ", covariance: " + covariance.str() + " }";
+  }
 };

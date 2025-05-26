@@ -47,5 +47,10 @@ namespace msg
      * along with a covariance matrix representing the uncertainty of this estimate.
      */
     TwistWithCovariance est_twist;
+
+    std::string str() const override
+    {
+      return "LocalizationEstimateMsg { " + est_pose.str() + ", " + est_twist.str() + " }";
+    }
   };
 } // namespace msg

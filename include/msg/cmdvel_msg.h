@@ -25,5 +25,10 @@ namespace msg
      * @see common_types::Twist
      */
     Twist twist;
+
+    std::string str() const override
+    {
+      return "CmdVelMsg { " + twist.str() + " }";
+    }
   };
 } // namespace msg

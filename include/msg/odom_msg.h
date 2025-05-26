@@ -43,5 +43,10 @@ namespace msg
      * along with a covariance matrix representing the uncertainty of the estimate.
      */
     TwistWithCovariance twist;
+
+    std::string str() const override
+    {
+      return "OdomDataMsg { " + pose.str() + ", " + twist.str() + " }";
+    }
   };
 } // namespace msg

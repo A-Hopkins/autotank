@@ -18,5 +18,10 @@ namespace msg
      * @brief The target pose for the robot to navigate toward.
      */
     Pose goal_pose;
+
+    std::string str() const override
+    {
+      return "WaypointMsg { " + goal_pose.str() + " }";
+    }
   };
 } // namespace msg

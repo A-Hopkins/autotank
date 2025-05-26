@@ -26,7 +26,7 @@ namespace msg
      */
     Twist twist;
 
-    std::string str() const override
+    std::string str() const
     {
       return "CmdVelMsg { " + twist.str() + " }";
     }

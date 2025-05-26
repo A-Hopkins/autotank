@@ -48,7 +48,7 @@ namespace msg
      */
     TwistWithCovariance est_twist;
 
-    std::string str() const override
+    std::string str() const
     {
       return "LocalizationEstimateMsg { " + est_pose.str() + ", " + est_twist.str() + " }";
     }

@@ -11,7 +11,7 @@
 #pragma once
 #include "msg/odom_msg.h"
 #include "odom.h"
-#include "protocore/include/task.h"
+#include "protocore/include/task/task.h"
 
 /**
  * @class OdomTask

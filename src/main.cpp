@@ -48,7 +48,7 @@ int main()
   // The logger is responsible for capturing and storing logs for debugging and
   // monitoring purposes. Here, we configure it to use a file sink with DEBUG level.
   auto& logger = Logger::instance();
-  logger.set_level(LogLevel::DEBUG).add_sink(std::make_unique<FileSink>(log_file));
+  logger.set_level(LogLevel::DEBUG).add_sink(std::make_unique<FileSink>(log_file)).use_relative_timestamps(true);
 
   // ---------------------------------------------------------------------------
   // STEP 2: Initialize the Broker

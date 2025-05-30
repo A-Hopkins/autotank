@@ -14,7 +14,7 @@
 #include "msg/lidar_msg.h"
 #include "msg/localization_estimate_msg.h"
 #include "msg/odom_msg.h"
-#include "protocore/include/task.h"
+#include "protocore/include/task/task.h"
 #include <chrono>
 
 #ifdef UNIT_TESTING

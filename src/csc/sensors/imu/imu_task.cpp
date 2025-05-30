@@ -8,6 +8,7 @@
  */
 #include "csc/sensors/imu/imu_task.h"
 #include "csc/sensors/imu/imu.h"
+#include "protocore/include/logger.h"
 #include <iostream>
 
 /**
@@ -44,9 +45,9 @@ void IMUTask::process_message(const msg::Msg& msg)
     }
     default:
     {
-      std::cout << get_name()
-                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
-                << std::endl;
+      Logger::instance().log(LogLevel::WARN, get_name(),
+                             " received unhandled message type: " +
+                                 msg::msg_type_to_string(msg.get_type()));
       break;
     }
   }
@@ -62,7 +63,11 @@ void IMUTask::process_message(const msg::Msg& msg)
  */
 void IMUTask::transition_to_state(task::TaskState new_state)
 {
-  std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
+  if (new_state == current_state)
+    return;
+
+  Logger::instance().log(LogLevel::INFO, get_name(),
+                         " transitioning to " + task_state_to_string(new_state));
   current_state = new_state;
 
   switch (new_state)
@@ -93,8 +98,9 @@ void IMUTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
-                << std::endl;
+      Logger::instance().log(LogLevel::ERROR, get_name(),
+                             "Unknown state transition requested: " +
+                                 task_state_to_string(new_state));
       break;
     }
   }
@@ -113,7 +119,6 @@ void IMUTask::process_imu_data(const msg::IMUDataMsg& data)
 {
   if (current_state == task::TaskState::RUNNING)
   {
-    // std::cout << "IMU data received: " << data.header.frame_id << std::endl;
     safe_publish(msg::Msg(this, data));
   }
 }

@@ -4,6 +4,7 @@
  *
  */
 #include "csc/navigation/navigation_task.h"
+#include "protocore/include/logger.h"
 #include <cmath>
 #include <random>
 
@@ -38,9 +39,9 @@ void NavigationTask::process_message(const msg::Msg& msg)
 
     default:
     {
-      std::cout << get_name()
-                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
-                << std::endl;
+      Logger::instance().log(LogLevel::WARN, get_name(),
+                             " received unhandled message type: " +
+                                 msg::msg_type_to_string(msg.get_type()));
       break;
     }
   }
@@ -50,7 +51,8 @@ void NavigationTask::transition_to_state(task::TaskState new_state)
 {
   if (new_state == current_state)
     return;
-  std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
+  Logger::instance().log(LogLevel::INFO, get_name(),
+                         " transitioning to " + task_state_to_string(new_state));
   current_state = new_state;
 
   // Always clear goal on a new state transistion
@@ -82,8 +84,9 @@ void NavigationTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
-                << std::endl;
+      Logger::instance().log(LogLevel::ERROR, get_name(),
+                             "Error: Unknown state transition requested: " +
+                                 task_state_to_string(new_state));
       break;
     }
   }
@@ -247,7 +250,7 @@ void NavigationTask::go_home_behavior()
 
   if (!plan_path_to_goal())
   {
-    std::cerr << "NavigationTask: cannot plan GO_HOME path\n";
+    Logger::instance().log(LogLevel::ERROR, get_name(), ": cannot plan GO_HOME path");
     clear_goal();
     return;
   }
@@ -288,7 +291,7 @@ void NavigationTask::explore_world_behavior()
     // 4) Plan & send
     if (!plan_path_to_goal())
     {
-      std::cerr << get_name() << ": could not plan to frontier\n";
+      Logger::instance().log(LogLevel::ERROR, get_name(), ": could not plan to frontier");
       clear_goal();
     }
     else
@@ -324,7 +327,8 @@ void NavigationTask::explore_world_behavior()
 
   if (!found)
   {
-    std::cerr << get_name() << ": explore_world_behavior could not find any reachable free spot\n";
+    Logger::instance().log(LogLevel::ERROR, get_name(),
+                           ": explore_world_behavior could not find any reachable free spot");
     clear_goal();
   }
 }

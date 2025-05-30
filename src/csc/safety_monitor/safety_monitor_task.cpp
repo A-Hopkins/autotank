@@ -4,6 +4,7 @@
  */
 
 #include "csc/safety_monitor/safety_monitor_task.h"
+#include "protocore/include/logger.h"
 
 void SafetyMonitorTask::process_message(const msg::Msg& msg)
 {
@@ -37,9 +38,9 @@ void SafetyMonitorTask::process_message(const msg::Msg& msg)
     }
     default:
     {
-      std::cout << get_name()
-                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
-                << std::endl;
+      Logger::instance().log(LogLevel::WARN, get_name(),
+                             " received unhandled message type: " +
+                                 msg::msg_type_to_string(msg.get_type()));
       break;
     }
   }
@@ -56,7 +57,8 @@ void SafetyMonitorTask::transition_to_state(task::TaskState new_state)
 {
   if (new_state == current_state)
     return;
-  std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
+  Logger::instance().log(LogLevel::INFO, get_name(),
+                         " transitioning to " + task_state_to_string(new_state));
   current_state = new_state;
   switch (new_state)
   {
@@ -83,8 +85,9 @@ void SafetyMonitorTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
-                << std::endl;
+      Logger::instance().log(LogLevel::ERROR, get_name(),
+                             "Unknown state transition requested: " +
+                                 task_state_to_string(new_state));
       break;
     }
   }

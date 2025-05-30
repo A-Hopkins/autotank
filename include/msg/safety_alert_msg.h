@@ -44,11 +44,9 @@ namespace msg
     std::string str() const
     {
       return "SafetyAlertMsg { level: " + std::to_string(static_cast<int>(level)) +
-            ", action: " + std::to_string(static_cast<int>(action)) +
-            ", dist: " + std::to_string(dist) +
-            ", ttc: " + std::to_string(ttc) +
-            ", " + pose.str() +
-            ", beam_index: " + std::to_string(beam_index) + " }";
+             ", action: " + std::to_string(static_cast<int>(action)) +
+             ", dist: " + std::to_string(dist) + ", ttc: " + std::to_string(ttc) + ", " +
+             pose.str() + ", beam_index: " + std::to_string(beam_index) + " }";
     }
   };
 } // namespace msg

@@ -7,6 +7,7 @@
  */
 #include "csc/sensors/lidar/lidar_task.h"
 #include "csc/sensors/lidar/lidar.h"
+#include "protocore/include/logger.h"
 #include <iostream>
 
 /**
@@ -41,9 +42,9 @@ void LidarTask::process_message(const msg::Msg& msg)
     }
     default:
     {
-      std::cout << get_name()
-                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
-                << std::endl;
+      Logger::instance().log(LogLevel::WARN, get_name(),
+                             " received unhandled message type: " +
+                                 msg::msg_type_to_string(msg.get_type()));
       break;
     }
   }
@@ -58,7 +59,11 @@ void LidarTask::process_message(const msg::Msg& msg)
  */
 void LidarTask::transition_to_state(task::TaskState new_state)
 {
-  std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
+  if (new_state == current_state)
+    return;
+
+  Logger::instance().log(LogLevel::INFO, get_name(),
+                         " transitioning to " + task_state_to_string(new_state));
   current_state = new_state;
 
   switch (new_state)
@@ -89,8 +94,9 @@ void LidarTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
-                << std::endl;
+      Logger::instance().log(LogLevel::ERROR, get_name(),
+                             "Unknown state transition requested: " +
+                                 task_state_to_string(new_state));
       break;
     }
   }
@@ -108,7 +114,6 @@ void LidarTask::process_lidar_data(const msg::LidarDataMsg& data)
 {
   if (current_state == task::TaskState::RUNNING)
   {
-    // std::cout << "Lidar data received: " << data.header.frame_id << std::endl;
     safe_publish(msg::Msg(this, data));
   }
 }

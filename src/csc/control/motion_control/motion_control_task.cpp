@@ -7,6 +7,7 @@
  * differential drive system based on localization and waypoints.
  */
 #include "csc/control/motion_control/motion_control_task.h"
+#include "protocore/include/logger.h"
 #include <algorithm>
 #include <cmath>
 
@@ -54,9 +55,9 @@ void MotionControlTask::process_message(const msg::Msg& msg)
     }
     default:
     {
-      std::cout << get_name()
-                << " received unhandled message type: " << msg::msg_type_to_string(msg.get_type())
-                << std::endl;
+      Logger::instance().log(LogLevel::WARN, get_name(),
+                             " received unhandled message type: " +
+                                 msg::msg_type_to_string(msg.get_type()));
       break;
     }
   }
@@ -76,7 +77,8 @@ void MotionControlTask::transition_to_state(task::TaskState new_state)
   if (new_state == current_state)
     return;
 
-  std::cout << get_name() << " transitioning to " << task_state_to_string(new_state) << std::endl;
+  Logger::instance().log(LogLevel::INFO, get_name(),
+                         " transitioning to " + task_state_to_string(new_state));
 
   // If running and transitioning to a new state send a zeroized velocity command
   // to stop the robot before transitioning to the new state
@@ -116,8 +118,9 @@ void MotionControlTask::transition_to_state(task::TaskState new_state)
     }
     default:
     {
-      std::cerr << "Error: Unknown state transition requested: " << task_state_to_string(new_state)
-                << std::endl;
+      Logger::instance().log(LogLevel::ERROR, get_name(),
+                             "Unknown state transition requested: " +
+                                 task_state_to_string(new_state));
       break;
     }
   }

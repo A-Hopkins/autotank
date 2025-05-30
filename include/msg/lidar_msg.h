@@ -86,19 +86,14 @@ namespace msg
     std::string str() const
     {
       std::ostringstream oss;
-      oss << "LidarDataMsg { angle_min: " << angle_min
-          << ", angle_max: " << angle_max
-          << ", angle_increment: " << angle_increment
-          << ", time_increment: " << time_increment
-          << ", scan_time: " << scan_time
-          << ", range_min: " << range_min
-          << ", range_max: " << range_max
-          << ", ranges_count: " << ranges_count;
+      oss << "LidarDataMsg { angle_min: " << angle_min << ", angle_max: " << angle_max
+          << ", angle_increment: " << angle_increment << ", time_increment: " << time_increment
+          << ", scan_time: " << scan_time << ", range_min: " << range_min
+          << ", range_max: " << range_max << ", ranges_count: " << ranges_count;
 
       if (ranges_count > 0)
       {
-        oss << ", ranges[0]: " << ranges[0]
-            << ", intensities[0]: " << intensities[0];
+        oss << ", ranges[0]: " << ranges[0] << ", intensities[0]: " << intensities[0];
       }
 
       oss << " }";

@@ -66,11 +66,11 @@ namespace msg
     std::string str() const
     {
       return "IMUDataMsg { orientation: " + orientation.str() +
-            ", orientation_covariance: " + orientation_covariance.str() +
-            ", angular_velocity: " + angular_velocity.str() +
-            ", angular_velocity_covariance: " + angular_velocity_covariance.str() +
-            ", linear_acceleration: " + linear_acceleration.str() +
-            ", linear_acceleration_covariance: " + linear_acceleration_covariance.str() + " }";
+             ", orientation_covariance: " + orientation_covariance.str() +
+             ", angular_velocity: " + angular_velocity.str() +
+             ", angular_velocity_covariance: " + angular_velocity_covariance.str() +
+             ", linear_acceleration: " + linear_acceleration.str() +
+             ", linear_acceleration_covariance: " + linear_acceleration_covariance.str() + " }";
     }
   };
 } // namespace msg

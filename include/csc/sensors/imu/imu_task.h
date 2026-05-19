@@ -9,7 +9,7 @@
 #pragma once
 #include "imu.h"
 #include "msg/imu_msg.h"
-#include "protocore/include/task.h"
+#include "protocore/include/task/task.h"
 
 /**
  * @class IMUTask

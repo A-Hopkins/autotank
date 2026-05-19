@@ -83,7 +83,7 @@ namespace msg
      */
     std::array<double, MAX_LIDAR_POINTS> intensities;
 
-    std::string str() const override
+    std::string str() const
     {
       std::ostringstream oss;
       oss << "LidarDataMsg { angle_min: " << angle_min

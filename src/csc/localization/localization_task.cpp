@@ -250,7 +250,7 @@ void LocalizationTask::handle_cmd_vel_data(const msg::CmdVelMsg* cmd_vel_data)
   };
 
   // --- perform EKF predict ---
-  ekf.predict_nonlinear(f, F, u);
+  ekf.predict(f, F, u);
 }
 
 void LocalizationTask::publish_estimate()

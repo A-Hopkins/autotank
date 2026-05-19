@@ -9,7 +9,7 @@
 #pragma once
 #include "lidar.h"
 #include "msg/lidar_msg.h"
-#include "protocore/include/task.h"
+#include "protocore/include/task/task.h"
 
 /**
  * @class LidarTask

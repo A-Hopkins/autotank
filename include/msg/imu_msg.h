@@ -63,7 +63,7 @@ namespace msg
      */
     linalg::Matrix<3, 3> linear_acceleration_covariance;
 
-    std::string str() const override
+    std::string str() const
     {
       return "IMUDataMsg { orientation: " + orientation.str() +
             ", orientation_covariance: " + orientation_covariance.str() +

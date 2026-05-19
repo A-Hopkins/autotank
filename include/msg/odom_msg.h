@@ -44,7 +44,7 @@ namespace msg
      */
     TwistWithCovariance twist;
 
-    std::string str() const override
+    std::string str() const
     {
       return "OdomDataMsg { " + pose.str() + ", " + twist.str() + " }";
     }

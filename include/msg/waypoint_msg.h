@@ -19,7 +19,7 @@ namespace msg
      */
     Pose goal_pose;
 
-    std::string str() const override
+    std::string str() const
     {
       return "WaypointMsg { " + goal_pose.str() + " }";
     }

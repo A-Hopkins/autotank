@@ -17,6 +17,7 @@ option(USE_SIM "Build for Gazebo simulation" True)
 # to reduce build time and complexity.
 set(BUILD_TESTING OFF CACHE BOOL "Disable external tests" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "Disable external examples" FORCE)
+set(BUILD_PYTHON_BINDINGS OFF CACHE BOOL "Disable Python bindings" FORCE)
 
 # Add the protocore library located in the external directory.
 # Define USE_CUSTOM_MSG_VARIANT so protocore uses our custom message variant types
@@ -58,9 +59,9 @@ if(USE_SIM)
   # The 'QUIET' argument suppresses messages if the package is found.
   # The 'REQUIRED' argument makes CMake stop with an error if not found.
   # 'OPTIONAL_COMPONENTS log' specifies optional parts of the library.
-  find_package(gz-transport14 QUIET REQUIRED OPTIONAL_COMPONENTS log)
+  find_package(gz-transport13 QUIET REQUIRED OPTIONAL_COMPONENTS log)
   # Store the major version number for later use in linking.
-  set(GZ_TRANSPORT_VER ${gz-transport14_VERSION_MAJOR})
+  set(GZ_TRANSPORT_VER ${gz-transport13_VERSION_MAJOR})
 
   message(STATUS "Building for Gazebo simulation")
   add_definitions(-DUSE_SIM)
@@ -71,7 +72,7 @@ if(USE_SIM)
       src/hal/gazebo/gazebo_diff_drive.cpp
       )
 
-  if(gz-transport14_FOUND)
+  if(gz-transport13_FOUND)
     message(STATUS "Found Gazebo Transport ${GZ_TRANSPORT_VER}")
   else()
     message(FATAL_ERROR "Gazebo Transport not found. Please install Gazebo Transport 14.")
@@ -83,7 +84,6 @@ endif()
 
 # Create executable
 add_executable(autotank ${SOURCES})
-target_link_libraries(autotank PRIVATE protocore)
 target_link_libraries(autotank PRIVATE protocore kfplusplus)
 
 # Include directories for headers
@@ -94,9 +94,9 @@ target_include_directories(autotank PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/external
 )
 # Link Gazebo Transport only if simulation is enabled
-if(USE_SIM AND gz-transport14_FOUND)
+if(USE_SIM AND gz-transport13_FOUND)
   # Include Gazebo Transport headers
-  target_include_directories(autotank PRIVATE ${gz-transport14_INCLUDE_DIRS})
+  target_include_directories(autotank PRIVATE ${gz-transport13_INCLUDE_DIRS})
   
   # Link Gazebo Transport
   target_link_libraries(autotank PRIVATE gz-transport${GZ_TRANSPORT_VER})

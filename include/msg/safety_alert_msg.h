@@ -41,7 +41,7 @@ namespace msg
     Pose         pose;       ///< Where the robot was when alert was generated
     uint16_t     beam_index; ///< Which ray index triggered the alert
 
-    std::string str() const override
+    std::string str() const
     {
       return "SafetyAlertMsg { level: " + std::to_string(static_cast<int>(level)) +
             ", action: " + std::to_string(static_cast<int>(action)) +

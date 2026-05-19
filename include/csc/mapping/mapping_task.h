@@ -11,7 +11,7 @@
 #include "msg/common_types/pose.h"
 #include "msg/lidar_msg.h"
 #include "msg/localization_estimate_msg.h"
-#include "protocore/include/task.h"
+#include "protocore/include/task/task.h"
 
 #ifdef UNIT_TESTING
 #include <gtest/gtest_prod.h>

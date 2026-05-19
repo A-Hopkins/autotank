@@ -10,7 +10,7 @@
 #pragma once
 #include "csc/services/map_service/map_service.h"
 #include "msg/localization_estimate_msg.h"
-#include "protocore/include/task.h"
+#include "protocore/include/task/task.h"
 #include <optional>
 
 #ifdef UNIT_TESTING
